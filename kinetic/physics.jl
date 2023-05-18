@@ -10,3 +10,21 @@ so that
 is the vector position of kth particle.
 =#
 
+
+function collide!(r0, dt, t, x, y, vx, vy)
+	##
+	N = length(x)
+	## wall
+	for i=1:N
+		if x[i]<0 || x[i]>1
+			vx[i] *= -1
+		end
+		if y[i]<0 || y[i]>1
+			vy[i] *= -1
+		end
+	end
+	## interparticle
+	##
+	return nothing
+end
+

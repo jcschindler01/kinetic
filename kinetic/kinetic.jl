@@ -121,16 +121,23 @@ end
 
 
 function timestep(r0, dt, t, x, y, vx, vy)
-	# xy(t+dt)
-	x  .+=  vx .* dt
-	y  .+=  vy .* dt
-	# vxy(t+dt)
-	vx .+= 0
-	vy .+= 0
-	# t
+	# free half step
+	x  .+=  vx .* dt/2
+	y  .+=  vy .* dt/2
+	# update velocities
+	velupdate!(r0, dt, t, x, y, vx, vy)
+	# free half step
+	x  .+=  vx .* dt/2
+	y  .+=  vy .* dt/2
+	# update time
 	t += dt
 	## return
 	return  t, x, y, vx, vy
+end
+
+function velupdate!(r0, dt, t, x, y, vx, vy)
+	## process collisions in an order determined by x,y
+	collide!(r0, dt, t, x, y, vx, vy)
 end
 
 
