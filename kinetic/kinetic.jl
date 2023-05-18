@@ -63,7 +63,7 @@ end
 
 
 function readdata(datafile)
-	## format is ("note", "N", "r0", "dT", "dt", "dtt", "t") + N * ("k", "x", "y", "vx", "vy")
+	## format is ("note", "N", "r0", "it", dT", "dt", "dtt", "t") + N * ("k", "x", "y", "vx", "vy")
 	## read
 	datastrings = []
 	open(datafile, "r") do io
@@ -71,24 +71,25 @@ function readdata(datafile)
 	end
 	## process
 	note = datastrings[1]
-	N = Integer(length(datastrings[8:end-1])/5)
+	it = parse(Int, datastrings[8])
+	N = Integer(length(datastrings[9:end-1])/5)
 	dT, dt, dtt, t = (parse(Float64, s) for s in datastrings[4:7])
 	x, y, vx, vy = zeros(Float64, N), zeros(Float64, N), zeros(Float64, N), zeros(Float64, N)
 	for k in 1:N
-		 x[k] = parse(Float64, datastrings[3+5k+1])
-		 y[k] = parse(Float64, datastrings[3+5k+2])
-		vx[k] = parse(Float64, datastrings[3+5k+3])
-		vy[k] = parse(Float64, datastrings[3+5k+4])
+		 x[k] = parse(Float64, datastrings[4+5k+1])
+		 y[k] = parse(Float64, datastrings[4+5k+2])
+		vx[k] = parse(Float64, datastrings[4+5k+3])
+		vy[k] = parse(Float64, datastrings[4+5k+4])
 	end
 	## data
-	data = note, N, dT, dt, dtt, t, x, y, vx, vy
+	data = note, N, dT, dt, dtt, t, x, y, vx, vy, it
 	## return
 	return data
 end
 
 function simulate(params, initial_data)
 	## unpack initial data
-	note0, N0, dT0, dt0, dtt0, t0, x0, y0, vx0, vy0 = initial_data
+	note0, N0, dT0, dt0, dtt0, t0, x0, y0, vx0, vy0, it = initial_data
 	N, dT, dt, dtt, r0 = N0, params.dT, params.dt, params.dtt, params.r0
 	## go
 	T = 0
@@ -96,14 +97,15 @@ function simulate(params, initial_data)
 	note = "sim"
 	t, x, y, vx, vy = t0, x0, y0, vx0, vy0
 	open(params.file, "a") do io
-		while T < dT
+		eps = 1e-12 * dtt
+		while (T + eps) < dT
 			T += dtt
-			t, x, y, vx, vy = timestep(r0, dtt, t, x, y, vx, vy)
+			t, x, y, vx, vy, it = timestep(r0, dtt, t, x, y, vx, vy, it)
 			if is_zeroish(T-nstep*dt)
 				println(nstep)
 				nstep +=1
 				## print
-				for dat in (note, N, r0, dT, dt, dtt, t)
+				for dat in (note, N, r0, dT, dt, dtt, t, it)
 					print(io, qp(dat))
 				end
 				for k in 1:N
@@ -120,24 +122,25 @@ function simulate(params, initial_data)
 end
 
 
-function timestep(r0, dt, t, x, y, vx, vy)
+function timestep(r0, dt, t, x, y, vx, vy, it)
 	# free half step
 	x  .+=  vx .* dt/2
 	y  .+=  vy .* dt/2
 	# update velocities
-	velupdate!(r0, dt, t, x, y, vx, vy)
+	velupdate!(r0, dt, t, x, y, vx, vy, it)
 	# free half step
 	x  .+=  vx .* dt/2
 	y  .+=  vy .* dt/2
-	# update time
-	t += dt
+	# update time and iterflag
+	t  += dt
+	it = (it+1)%2
 	## return
-	return  t, x, y, vx, vy
+	return  t, x, y, vx, vy, it
 end
 
-function velupdate!(r0, dt, t, x, y, vx, vy)
-	## process collisions in an order determined by x,y
-	collide!(r0, dt, t, x, y, vx, vy)
+function velupdate!(r0, dt, t, x, y, vx, vy, it)
+	## process collisions
+	collide!(r0, dt, t, x, y, vx, vy, it)
 end
 
 

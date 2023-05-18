@@ -11,7 +11,7 @@ is the vector position of kth particle.
 =#
 
 
-function collide!(r0, dt, t, x, y, vx, vy)
+function collide!(r0, dt, t, x, y, vx, vy, it)
 	##
 	N = length(x)
 	## wall

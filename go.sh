@@ -2,9 +2,9 @@
 
 # usage: go.sh -N 10 -T dT -n nsteps -d div 
 
-dT=2
-nsteps=40
-div=100
+dT=1
+nsteps=1000
+div=1
 N=100
 r0=0.01
 ic="chain"

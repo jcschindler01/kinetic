@@ -33,7 +33,7 @@ end
 
 function headstring(io,N)
 	## print
-	for dat in ("NOTES", "N", "r0", "dT", "dt", "dtt", "t")
+	for dat in ("NOTES", "N", "r0","dT", "dt", "dtt", "t", "it")
 		print(io, qp(dat))
 	end
 	for k in 1:N
@@ -45,7 +45,7 @@ function headstring(io,N)
 end
 
 function datastring(io, N, k, x, y, vx, vy)
-	for dat in ("init", N, 0.0, 0.0, 0.0, 0.0, 0.0)
+	for dat in ("init", N, 0.0, 0.0, 0.0, 0.0, 0.0, 0)
 		print(io, qp(dat))
 	end
 	for k in 1:N
