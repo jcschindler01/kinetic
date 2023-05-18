@@ -5,7 +5,7 @@
 dT=4
 nsteps=60
 div=1000
-N=500
+N=1000
 r0=0.001
 ic="chain"
 

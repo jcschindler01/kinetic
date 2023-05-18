@@ -64,7 +64,7 @@ function ball!(r0, dt, t, x, y, vx, vy, it, pairs)
 		eps = 1e-12
 		av = (u*dx+v*dy)/(dr+eps)
 		## only interact if sufficient magnitude approach velocity
-		if !(abs(av) > 0*abs(2*r0/dt))
+		if !(abs(av) > 0.001*abs(2*r0/dt))
 			continue
 		end 
 		## calculate center of mass velocity
@@ -80,32 +80,4 @@ function ball!(r0, dt, t, x, y, vx, vy, it, pairs)
 		vy[j]  = V + vprime
 	end
 end
-
-#=
-
-// velocities due to interaction
-if (interact) {
-	// loop over k and kk>k
-	for (k=0; k<N; k++) {
-		for (kk=k+1; kk<N; kk++) {
-			dx = 0.5*( x[kk]- x[k]);
-			dy = 0.5*( y[kk]- y[k]);
-			// if close enough
-			if (sqrt(dx*dx+dy*dy) < 2.0*a) {
-				u  = 0.5*(vx[kk]-vx[k]);
-				v  = 0.5*(vy[kk]-vy[k]);
-				// if approaching
-				if (u*dx+v*dy < 0) {
-					//printf("bang");
-					U  = 0.5*(vx[kk]+vx[k]);
-					V  = 0.5*(vy[kk]+vy[k]);
-					uprime = u - 2.0*dx*(u*dx+v*dy)/(dx*dx+dy*dy);
-					vprime = v - 2.0*dy*(u*dx+v*dy)/(dx*dx+dy*dy);
-					vx[kk] = U + uprime;
-					vy[kk] = V + vprime;
-					vx[k]  = U - uprime;
-					vy[k]  = V - vprime;
-
-=#
-
 
