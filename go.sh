@@ -4,10 +4,10 @@
 
 dT=4
 nsteps=60
-div=100
-N=1000
+div=1000
+N=500
 r0=0.001
-ic="chain2"
+ic="chain"
 
 while getopts T:n:d:N:i:r: opt; do
     case $opt in
