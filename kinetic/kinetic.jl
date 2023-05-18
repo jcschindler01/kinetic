@@ -91,6 +91,7 @@ function simulate(params, initial_data)
 	## unpack initial data
 	note0, N0, dT0, dt0, dtt0, t0, x0, y0, vx0, vy0, it = initial_data
 	N, dT, dt, dtt, r0 = N0, params.dT, params.dt, params.dtt, params.r0
+	pairs = PAIRS(N)
 	## go
 	T = 0
 	nstep = 1
@@ -100,7 +101,7 @@ function simulate(params, initial_data)
 		eps = 1e-12 * dtt
 		while (T + eps) < dT
 			T += dtt
-			t, x, y, vx, vy, it = timestep(r0, dtt, t, x, y, vx, vy, it)
+			t, x, y, vx, vy, it = timestep(r0, dtt, t, x, y, vx, vy, it, pairs)
 			if is_zeroish(T-nstep*dt)
 				println(nstep)
 				nstep +=1
@@ -122,12 +123,12 @@ function simulate(params, initial_data)
 end
 
 
-function timestep(r0, dt, t, x, y, vx, vy, it)
+function timestep(r0, dt, t, x, y, vx, vy, it, pairs)
 	# free half step
 	x  .+=  vx .* dt/2
 	y  .+=  vy .* dt/2
 	# update velocities
-	velupdate!(r0, dt, t, x, y, vx, vy, it)
+	velupdate!(r0, dt, t, x, y, vx, vy, it, pairs)
 	# free half step
 	x  .+=  vx .* dt/2
 	y  .+=  vy .* dt/2
@@ -138,9 +139,9 @@ function timestep(r0, dt, t, x, y, vx, vy, it)
 	return  t, x, y, vx, vy, it
 end
 
-function velupdate!(r0, dt, t, x, y, vx, vy, it)
+function velupdate!(r0, dt, t, x, y, vx, vy, it, pairs)
 	## process collisions
-	collide!(r0, dt, t, x, y, vx, vy, it)
+	collide!(r0, dt, t, x, y, vx, vy, it, pairs)
 end
 
 
@@ -164,7 +165,7 @@ dt=nothing
 dtt=nothing
 DIV=10
 NSTEPS=10
-R0=.01
+R0=.001
 ## get args
 args = ARGS
 ## get file

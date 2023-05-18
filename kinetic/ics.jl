@@ -45,6 +45,22 @@ function chain(N)
 	return xy, vnorm(vxy)
 end
 
+## famous chain number 2
+function chain2(N)
+	##
+	lam = range(0,1,N)
+	##
+	x = .5 .* lam
+	y = x .^ 2
+	vx = 1 .+ 0*y
+	vy = .4 .+ 0*y
+	##
+	xy  = hcat(x,y)
+	vxy = hcat(vx,vy)
+	##
+	return xy, vnorm(vxy)
+end
+
 ## circle
 function circle(N; v0=0.00, R=.1)
 	s   = range(0,1,N+1)[1:end-1]

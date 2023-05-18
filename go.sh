@@ -3,10 +3,10 @@
 # usage: go.sh -N 10 -T dT -n nsteps -d div 
 
 dT=1
-nsteps=1000
-div=1
-N=100
-r0=0.01
+nsteps=20
+div=100
+N=500
+r0=0.001
 ic="chain"
 
 while getopts T:n:d:N:i:r: opt; do
