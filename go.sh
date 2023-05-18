@@ -2,12 +2,12 @@
 
 # usage: go.sh -N 10 -T dT -n nsteps -d div 
 
-dT=1
-nsteps=20
+dT=4
+nsteps=60
 div=100
-N=500
+N=1000
 r0=0.001
-ic="chain"
+ic="chain2"
 
 while getopts T:n:d:N:i:r: opt; do
     case $opt in
