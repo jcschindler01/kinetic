@@ -84,9 +84,7 @@ end
 function naivecol!(dat::Datapoint)
 	#= Collide if close and approaching. (Much faster in current form.) =#
 	## faster arrays
-	x,  y  =  dat.xy[:,1],  dat.xy[:,2]
-	vx, vy = dat.vxy[:,1], dat.vxy[:,2]
-	r0 = 1*dat.r0
+	x,  y, vx, vy, r0  =  dat.xy[:,1],  dat.xy[:,2], dat.vxy[:,1], dat.vxy[:,2], 1*dat.r0
 	## loop over particle pairs
 	for i=1:dat.N
 		for j=i+1:dat.N
@@ -107,16 +105,5 @@ function naivecol!(dat::Datapoint)
 end
 
 
-
-#= 
-Proper way to go from x,y to xy and back.
-	xy  = hcat(x,y)
-	x,y = xy[:,1], xy[:,2]
-The joint one has the form
-	xy[N,2]
-so that
-	xy[k,:]
-is the vector position of kth particle.
-=#
 
 

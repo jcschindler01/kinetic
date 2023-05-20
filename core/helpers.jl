@@ -1,4 +1,11 @@
 
+#=
+Back and forth.
+	xy  = hcat(x,y)
+	x,y = xy[:,1], xy[:,2].
+=#
+
+
 ## random xy and vxy
 zrand(N) = round.(rand(Float64, (N,2)); digits=5)
 vrand(N) = round.(2. .* rand(Float64, (N,2)) .- 1; digits=5)
