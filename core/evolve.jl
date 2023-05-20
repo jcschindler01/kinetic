@@ -12,7 +12,12 @@ function evolve!(dat::Datapoint; tprime=nothing, kwargs...)
 	DT = dt/div = internal timestep
 	=#
 	## kwargs
-	#dump(kwargs)
+	for kwa in kwargs
+		if kwa[1] in fieldnames(Datapoint)
+			val = oftype(getfield(dat, kwa[1]), kwa[2])
+			setfield!(dat, kwa[1], val)
+		end
+	end
 	## note origin
 	dat.origin = "evolve"
 	## timestep
@@ -103,7 +108,6 @@ function naivecol!(dat::Datapoint)
 		end
 	end
 end
-
 
 
 

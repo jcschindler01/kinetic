@@ -18,6 +18,6 @@ norm(a) = sqrt(dot(a,a))
 dist(a,b) = norm(a-b)
 phasedist(d1::Datapoint, d2::Datapoint) = sqrt(dist(d1.xy,d2.xy)^2 + dist(d1.vxy,d2.vxy)^2)
 
-## pairs
-pairs(N) = [(i,j) for i=1:N, j=1:N if j>i]
+## particle pairs
+ppairs(N) = [(i,j) for j=1:N, i=1:N if j>i]
 
