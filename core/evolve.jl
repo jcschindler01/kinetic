@@ -97,7 +97,7 @@ function naivecol!(dat::Datapoint)
 			dvy = vy[j] - vy[i]
 			## conditions
 			isclose = sqrt(dx^2 + dy^2) < 2*r0
-			isapproaching = dx*dvx+dx*dvy<0
+			isapproaching = dx*dvx+dy*dvy<0
 			## pass if sufficiently close
 			if isclose && isapproaching
 				collide!(dat, i, j)

@@ -3,21 +3,25 @@
 include("kinetic.jl")
 using .Kinetic
 
-data = Datapoint(N=100, r0=.005, div=1000, integrator="naive")
+@time begin
 
-#new_file(data)
+# data = Datapoint(N=200, r0=.005, div=10, integrator="naive")
+# evolve!(data; tprime=0)
 
+data = Datapoint(N=2000, r0=.005, div=100, integrator="naive")
 
-tt = range(0,4,101)
+new_file(data)
 
-@time for i in 1:length(tt)
+t = range(0,.5,61)
+
+for i in 1:length(t)
+	evolve!(data; tprime=t[i])
+	to_file(data)
 	println(qp((i, data.cc)))
-	evolve!(data; tprime=tt[i])
-	#to_file(data)
 end
 
+end
 
+run(`python3 animate.py`)
 
-# run(`python3 animate.py`)
-
-# run(`viewnior out.gif`)
+run(`viewnior out.gif`)

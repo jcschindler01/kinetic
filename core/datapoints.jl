@@ -15,6 +15,6 @@
 	t::Float64=0.0							## time
 	parity::Int=0							## parity flag
 	xy::Array{Float64}=zrand(N)				## position
-	vxy::Array{Float64}=vrand(N)			## velocity
+	vxy::Array{Float64}=vrmsnorm(vrand(N))	## velocity
 end
 
