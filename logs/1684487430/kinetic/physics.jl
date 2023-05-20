@@ -14,8 +14,8 @@ function timestep(r0, dt, t, x, y, vx, vy, it, pairs)
 	# free half step
 	x  .+=  vx .* dt/2
 	y  .+=  vy .* dt/2
-	## for testing
-	#it=0
+	# for testing turn off reversibility
+	it = 0
 	# update velocities
 	velupdate!(r0, dt, t, x, y, vx, vy, it, pairs)
 	# free half step
@@ -108,7 +108,6 @@ function ball!(r0, dt, t, x, y, vx, vy, it, pairs)
 		vx[j]  = U + uprime
 		vy[i]  = V - vprime
 		vy[j]  = V + vprime
-		#print("bang")
 	end
 end
 

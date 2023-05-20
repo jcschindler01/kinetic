@@ -62,10 +62,10 @@ function chain2(N)
 end
 
 ## circle
-function circle(N; v0=1, R=.25)
+function circle(N; v0=1, R=.1)
 	s   = range(0,1,N+1)[1:end-1]
 	xy  = hcat(0.5 .+ R*cos.(2*pi*s),0.5 .+ R*sin.(2*pi*s))
-	vxy = -v0 .* (xy .- .5)/sum(abs.(xy .- .5))
+	vxy = -v0 .* (xy .- .5)
 	return xy, vxy
 end
 

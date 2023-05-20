@@ -1,13 +1,12 @@
 #! /bin/sh
 
-# usage: go.sh -N 10 -T dT -n nsteps -d div 
-
-dT=2
-nsteps=10
-div=1
+dT=4
+nsteps=40
+div=100
 N=3
 r0=0.01
 ic="circle"
+flops=1
 
 while getopts T:n:d:N:i:r: opt; do
     case $opt in
@@ -17,6 +16,7 @@ while getopts T:n:d:N:i:r: opt; do
         N ) N=${OPTARG};;
         i ) ic=${OPTARG};;
         r ) r0=${OPTARG};;
+        x ) flops=${OPTARG};;
     esac
 done
 
@@ -27,14 +27,21 @@ echo "div = $div"
 echo "N = $N"
 echo "ic = $ic"
 echo "r0 = $r0"
+echo "flops = $flops"
 
 echo " "
 echo "init"
 julia kinetic/init.jl -N $N -ic $ic
 echo "sleep 1s"
 sleep 1s
+
 echo "sim"
 julia kinetic/kinetic.jl -dT $dT -nsteps $nsteps -div $div -r0 $r0
+echo "rev"
+julia kinetic/frev.jl
+echo "sim"
+julia kinetic/kinetic.jl -dT $dT -nsteps $nsteps -div $div -r0 $r0
+
 echo "animate"
 python3 kinetic/animate.py
 echo "view"
