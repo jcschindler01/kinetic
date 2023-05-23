@@ -21,3 +21,5 @@ phasedist(d1::Datapoint, d2::Datapoint) = sqrt(dist(d1.xy,d2.xy)^2 + dist(d1.vxy
 ## particle pairs
 ppairs(N) = [(i,j) for j=1:N, i=1:N if j>i]
 
+## area
+area(dat::Datapoint) = dat.N * pi * dat.r0^2
