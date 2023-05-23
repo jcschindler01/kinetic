@@ -14,12 +14,19 @@ vrmsnorm(vxy) = round.(vxy/rms(vxy); digits=5)
 
 ## distances
 dot(a,b) = a' * b
-norm(a) = sqrt(dot(a,a))
-dist(a,b) = norm(a-b)
-phasedist(d1::Datapoint, d2::Datapoint) = sqrt(dist(d1.xy,d2.xy)^2 + dist(d1.vxy,d2.vxy)^2)
+using LinearAlgebra: norm
+phasedist(d1::Datapoint, d2::Datapoint) = norm(hcat(d2.xy.-d1.xy,d2.vxy.-d1.vxy))
 
 ## particle pairs
 ppairs(N) = [(i,j) for j=1:N, i=1:N if j>i]
 
 ## area
 area(dat::Datapoint) = dat.N * pi * dat.r0^2
+
+## value parser
+parser(T::Type, s::String) = T==String ? s : parse(T,s)
+
+## get initial conditions
+getic(ic::String,N::Int) = eval(:($(Symbol(ic))($(N))))
+
+

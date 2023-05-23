@@ -64,9 +64,6 @@ end
 Datapoint to String/File IO.
 =#
 
-# value parser
-parser(T::Type, s::String) = T==String ? s : parse(T,s)
-
 # datapoint from qp string
 function from_qp!(datapoint::Datapoint, s::String)
 	## instring

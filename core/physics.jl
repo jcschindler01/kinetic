@@ -37,7 +37,11 @@ function wallz!(dat::Datapoint)
 	dat.xy[mask]  .*=  2 .- dat.xy[mask]
 end
 
-
+function reversal!(dat::Datapoint)
+	## reverse velocities
+	dat.vxy .*= -1
+	dat.origin = "reverse"
+end
 
 function naivecol!(dat::Datapoint)
 	#= Collide if close and approaching. =#
@@ -54,8 +58,9 @@ function naivecol!(dat::Datapoint)
 			## conditions
 			isclose = sqrt(dx^2 + dy^2) < 2*r0
 			isapproaching = dx*dvx+dy*dvy<0
+			inbounds = 0<x[i]<1 && 0<y[i]<1 && 0<x[j]<1 && 0<y[j]<1
 			## pass if sufficiently close
-			if isclose && isapproaching
+			if isclose && isapproaching && inbounds
 				collide!(dat, i, j)
 			end
 		end
@@ -80,8 +85,9 @@ function symcol!(dat::Datapoint)
 			dvy = vy[j] - vy[i]
 			## conditions
 			isclose = sqrt(dx^2 + dy^2) < 2*r0
+			inbounds = 0<x[i]<1 && 0<y[i]<1 && 0<x[j]<1 && 0<y[j]<1
 			## pass if sufficiently close
-			if isclose
+			if isclose && inbounds
 				collide!(dat, i, j)
 			end
 		end

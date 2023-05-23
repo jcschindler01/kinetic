@@ -6,23 +6,38 @@ using .Kinetic
 
 @time begin
 
-data = Datapoint(N=500, r0=.005, div=100, integrator="sym")
-
-evolve!(data; tprime=4, div=1000)
-	
+data0 = Datapoint(N=10, r0=.002, div=10, ic="corner", integrator="sym")
+data0T = deepcopy(data0)
+reversal!(data0T)
+data  = deepcopy(data0)
 new_file(data)
 
-t = range(0,.5,11)
+T = 1
+frames = 31
 
-for i in 1:length(t)
-	evolve!(data; tprime=t[i], div=100)
+dt = T / frames
+
+## forward
+for i in 1:frames
+	evolve!(data; dt=dt)
 	to_file(data)
-	println(qp((i, data.cc)))
+	println(qp((i, data.cc, phasedist(data,data0)/data.N)))
+end
+## flip
+println("reversal!")
+reversal!(data)
+to_file(data)
+## backward
+for i in 1:frames
+	evolve!(data; dt=dt)
+	to_file(data)
+	println(qp((i, data.cc, phasedist(data,data0T)/data.N)))
+end
+#
+
 end
 
-end
 
+# run(`python3 animate.py`)
 
-run(`python3 animate.py`)
-
-run(`viewnior out.gif`)
+# run(`viewnior out.gif`)

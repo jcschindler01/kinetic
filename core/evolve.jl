@@ -38,21 +38,23 @@ end
 
 function free_step!(dat::Datapoint, dt)
 	#= Step dat from time [t] to time [t + dt]. =#
-	free!(dat, dt)
-	wallz!(dat)
+	free!(dat, dt/2)
+	wallv!(dat)
+	free!(dat, dt/2)
 end
 
 function naive_step!(dat::Datapoint, dt)
 	#= Step dat from time [t] to time [t + dt]. =#
-	free!(dat, dt)
-	wallz!(dat)
+	free!(dat, dt/2)
+	wallv!(dat)
 	naivecol!(dat)
+	free!(dat, dt/2)
 end
 
 function sym_step!(dat::Datapoint, dt)
 	#= Step dat from time [t] to time [t + dt]. =#
 	free!(dat, dt/2)
-	wallz!(dat)
+	wallv!(dat)
 	symcol!(dat)
 	free!(dat, dt/2)
 end
