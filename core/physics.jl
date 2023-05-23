@@ -36,3 +36,58 @@ function wallz!(dat::Datapoint)
 	dat.vxy[mask] .*= -1
 	dat.xy[mask]  .*=  2 .- dat.xy[mask]
 end
+
+
+
+function naivecol!(dat::Datapoint)
+	#= Collide if close and approaching. =#
+	## faster arrays
+	x,  y, vx, vy, r0  =  dat.xy[:,1],  dat.xy[:,2], dat.vxy[:,1], dat.vxy[:,2], 1*dat.r0
+	## loop over particle pairs
+	for i=1:dat.N
+		for j=i+1:dat.N
+			## values
+			dx  =  x[j] -  x[i]
+			dy  =  y[j] -  y[i]
+			dvx = vx[j] - vx[i]
+			dvy = vy[j] - vy[i]
+			## conditions
+			isclose = sqrt(dx^2 + dy^2) < 2*r0
+			isapproaching = dx*dvx+dy*dvy<0
+			## pass if sufficiently close
+			if isclose && isapproaching
+				collide!(dat, i, j)
+			end
+		end
+	end
+end
+
+
+function symcol!(dat::Datapoint)
+	#= Time symmetric collision. =#
+	## faster arrays
+	x,  y, vx, vy, r0, N  =  dat.xy[:,1],  dat.xy[:,2], dat.vxy[:,1], dat.vxy[:,2], 1*dat.r0, 1*dat.N
+	## parity check
+	dat.parity==1 ? parflip = reverse : parflip = identity	
+	## loop over particle pairs
+	for i=parflip(1:N)
+		## loop
+		for j=parflip(i+1:N)
+			## values
+			dx  =  x[j] -  x[i]
+			dy  =  y[j] -  y[i]
+			dvx = vx[j] - vx[i]
+			dvy = vy[j] - vy[i]
+			## conditions
+			isclose = sqrt(dx^2 + dy^2) < 2*r0
+			## pass if sufficiently close
+			if isclose
+				collide!(dat, i, j)
+			end
+		end
+	end
+	## change parity
+	dat.parity = (dat.parity + 1) % 2
+end
+
+	

@@ -4,30 +4,25 @@ include("kinetic.jl")
 using .Kinetic
 
 
-data = datapoint(N=5, div=1, integrator="sym")
+@time begin
 
-evolve!(data)
+data = Datapoint(N=500, r0=.005, div=100, integrator="sym")
 
-
-# @time begin
-
-# data = Datapoint(N=5, r0=.01, div=1, integrator="sym")
-
-
+evolve!(data; tprime=4, div=1000)
 	
-# new_file(data)
+new_file(data)
 
-# t = range(0,1,21)
+t = range(0,.5,11)
 
-# for i in 1:length(t)
-# 	evolve!(data; tprime=t[i])
-# 	to_file(data)
-# 	println(qp((i, data.cc)))
-# end
+for i in 1:length(t)
+	evolve!(data; tprime=t[i], div=100)
+	to_file(data)
+	println(qp((i, data.cc)))
+end
 
 end
 
 
-# run(`python3 animate.py`)
+run(`python3 animate.py`)
 
-# run(`viewnior out.gif`)
+run(`viewnior out.gif`)
