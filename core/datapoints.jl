@@ -1,7 +1,7 @@
 
 @kwdef mutable struct Datapoint
 	## parameters
-	origin::String="rand"					## how it was generated
+	origin::String="init"					## how it was generated
 	N::Int=3 								## number particles
 	r0::Float64=0.0							## ball radius (0 = no interaction)
 	integrator::String="free"				## collision physics used to generate it
