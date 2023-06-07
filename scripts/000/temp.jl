@@ -15,13 +15,13 @@ dat0 = Datapoint(N=50, r0=.005, dt=.01, div=1, ic="corner", integrator="naive")
 
 ## go
 bp = Boxplot()
-display(bp.fig)
 
 ## go
 for loop=1:loops
 
 	dat = deepcopy(dat0)
 	update!(bp,dat)
+	display(bp.fig)
 
 	while dat.t<=T
 		evolve!(dat)
