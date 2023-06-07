@@ -1,16 +1,17 @@
 
 
+
 module KPlot
 
-export newfig
-
-include("kinetic.jl")
+export Boxplot, update!
 
 using GLMakie
-using .Kinetic
+using StatsBase: Histogram, fit, normalize
 
+const vedges = range(0,3,51)
+const vbins = (vedges[1:end-1]+vedges[2:end])/2
 
-boxtheme = Theme(
+const boxtheme = Theme(
     fontsize=14,
     palette = (color=[:black,],),
     Axis = (
@@ -29,22 +30,6 @@ boxtheme = Theme(
         markersize = 5,
     ),
 )
-
-mutable struct Boxplot
-    fig::Figure
-    t::Observable{Real}
-    x::Observable{Vector{Real}}
-    y::Observable{Vector{Real}}
-    vx::Observable{Vector{Real}}
-    vy::Observable{Vector{Real}}
-end
-
-function Boxplot()
-    bp = Boxplot(newfig(), Observable(0.0), Observable([]), Observable([]), Observable([]), Observable([]))
-    scatter!(bp.fig.content[1], bp.x,  bp.y)
-    scatter!(bp.fig.content[2], bp.vx, bp.vy)
-    return bp
-end
 
 function newfig()
     ## theme
@@ -70,18 +55,50 @@ function newfig()
         xticks=0:3,
         yticks=0:2,
     )
+    Axis(fig[2,2],
+    )
     return fig
 end
 
+@kwdef mutable struct Boxplot
+    fig::Figure
+    t::Observable{Real} = Observable(0.0)
+    x::Observable{Vector{Real}}  = Observable([])
+    y::Observable{Vector{Real}}  = Observable([])
+    vx::Observable{Vector{Real}} = Observable([])
+    vy::Observable{Vector{Real}} = Observable([])
+    v::Observable{Vector{Real}}  = Observable([])
+    vhist::Observable{Vector{Real}} = 0*vbins
+    ann::Observable{String} = "t="
+end
 
+function Boxplot()
+    bp = Boxplot(fig=newfig())
+    scatter!(bp.fig.content[1], bp.x,  bp.y)
+    scatter!(bp.fig.content[2], bp.vx, bp.vy)
+    scatter!(bp.fig.content[3], vbins, bp.vhist,
+        markersize = 10,
+        color = :darkslategray3,
+        )
+    text!(bp.fig.content[4], .5,.5; text=bp.ann, align=(:center,:center))
+    return bp
+end
 
-
+function update!(bp::Boxplot, dat)
+    bp.t[] = dat.t
+    bp.x.val  =  dat.xy[:,1]
+    bp.y[]    =  dat.xy[:,2]
+    bp.vx.val = dat.vxy[:,1]
+    bp.vy[]   = dat.vxy[:,2]
+    bp.v.val  = sqrt.(bp.vx.val.^2 + bp.vy.val.^2)
+    bp.vhist[] = normalize(fit(Histogram, bp.v.val, vedges); mode=:pdf).weights
+    bp.ann[] = "t=$(round(dat.t; digits=3))"
+    return bp
+end
 
 
 
 end
-
-
 
 
 
