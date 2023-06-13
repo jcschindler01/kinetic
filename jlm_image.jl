@@ -1,7 +1,7 @@
 """
 To generate system image:
 
->> julia
+>> julia/jlm
 
 using PackageCompiler
 

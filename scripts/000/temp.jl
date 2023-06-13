@@ -9,32 +9,40 @@ using .KPlot
 
 ## params
 T = 2
-rate = 2
+rate = 4
 loops = 1
-dat0 = Datapoint(N=50, r0=.005, dt=.01, div=1, ic="corner", integrator="naive")
+dat0 = Datapoint(N=500, r0=.005, dt=.01, div=1, ic="corner", integrator="naive")
 
 ## go
 bp = Boxplot()
+display(bp.fig)
+showinit!(bp, dat0)
+
+## number steps
+nsteps = floor(T/dat0.dt)
 
 ## go
 for loop=1:loops
 
 	dat = deepcopy(dat0)
 	update!(bp,dat)
-	display(bp.fig)
 
-	while dat.t<=T
+	for k=1:nsteps
 		evolve!(dat)
 		update!(bp,dat)
 		sleep(dat.dt/rate)
 	end
 
 	reversal!(dat)
+	update!(bp,dat)
 
-	while dat.t<=2*T
+	for k=1:nsteps
 		evolve!(dat)
 		update!(bp,dat)
 		sleep(dat.dt/rate)
 	end
+
+	reversal!(dat)
+	update!(bp,dat)
 end
 

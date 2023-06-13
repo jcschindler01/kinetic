@@ -3,13 +3,16 @@
 
 module KPlot
 
-export Boxplot, update!
+export Boxplot, update!, showinit!
 
 using GLMakie
 using StatsBase: Histogram, fit, normalize
 
-const vedges = range(0,3,51)
+include("helpers.jl")
+
+const vedges = range(0,3,31)
 const vbins = (vedges[1:end-1]+vedges[2:end])/2
+const vsmooth = range(0,3,1001)
 
 const boxtheme = Theme(
     fontsize=14,
@@ -24,10 +27,12 @@ const boxtheme = Theme(
     ),
     Lines = (
         color = :black,
+        lw = 2,
     ),
     Scatter = (
         marker = :circle,
         markersize = 5,
+        strokevisible = false,
     ),
 )
 
@@ -63,6 +68,7 @@ end
 @kwdef mutable struct Boxplot
     fig::Figure
     t::Observable{Real} = Observable(0.0)
+    temp::Observable{Real} = Observable(0.5)
     x::Observable{Vector{Real}}  = Observable([])
     y::Observable{Vector{Real}}  = Observable([])
     vx::Observable{Vector{Real}} = Observable([])
@@ -80,7 +86,10 @@ function Boxplot()
         markersize = 10,
         color = :darkslategray3,
         )
-    text!(bp.fig.content[4], .5,.5; text=bp.ann, align=(:center,:center))
+    lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth; T=bp.temp.val), -ones(length(vsmooth)),
+        color = (:darkslategray3, 0.3),
+        )
+    text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
     return bp
 end
 
@@ -92,8 +101,36 @@ function update!(bp::Boxplot, dat)
     bp.vy[]   = dat.vxy[:,2]
     bp.v.val  = sqrt.(bp.vx.val.^2 + bp.vy.val.^2)
     bp.vhist[] = normalize(fit(Histogram, bp.v.val, vedges); mode=:pdf).weights
-    bp.ann[] = "t=$(round(dat.t; digits=3))"
+    bp.temp[] = round(temp(dat); digits=3)
+    bp.ann[] =  """
+                  t=$(round(dat.t; digits=3))
+
+                  N=$(dat.N)
+                 r0=$(dat.r0)
+                 af=$(round(area(dat); digits=3))
+                int=$(dat.integrator)
+                 ic=$(dat.ic)
+
+                  T=$(round(temp(dat); digits=3))
+                 cc=$(dat.cc)
+                mcc=$(dat.mcc)
+
+                pdn=$(round(phasedist(dat)/dat.N; digits=5))
+                """
     return bp
+end
+
+
+function showinit!(bp::Boxplot, dat)
+    col = "#dddddd"
+    scatter!(bp.fig.content[1],  dat.xy0[:,1],  dat.xy0[:,2], -ones(dat.N); color=col)
+    scatter!(bp.fig.content[2], dat.vxy0[:,1], dat.vxy0[:,2], -ones(dat.N); color=col)
+    v0 = sqrt.(dat.vxy[:,1].^2 + dat.vxy[:,2].^2)
+    vhist0 = normalize(fit(Histogram, v0, vedges); mode=:pdf).weights
+    scatter!(bp.fig.content[3], vbins, vhist0, -ones(length(vbins)),
+        markersize = 10,
+        color = col,
+        )
 end
 
 

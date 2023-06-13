@@ -16,5 +16,8 @@
 	parity::Int=0							## parity flag
 	xy::Array{Float64}=getic(ic,N)[1]		## position
 	vxy::Array{Float64}=getic(ic,N)[2]		## velocity
+	t0::Float64=1*t  						## initial time
+	xy0::Array{Float64}=1*xy 				## initial position
+	vxy0::Array{Float64}=1*vxy				## initial velocity
 end
 
