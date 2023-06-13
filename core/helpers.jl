@@ -46,5 +46,8 @@ Here m=1 and V=1. Define T=1/B (ie kb=1). Then T=U/N.
 speeds(dat) = sqrt.(dat.vxy[:,1].^2 + dat.vxy[:,2].^2)
 energy(dat) = sum(dat.vxy[:,1].^2 + dat.vxy[:,2].^2)/2
 temp(dat) = energy(dat)/dat.N
-maxboltz(v; T=1) = (v./T).*exp.(-v.^2 ./ (2*T))
+maxboltz(v; T::Real=1) = (v./T).*exp.(-v.^2 ./ (2*T))
 
+
+## dotsize (r,rpx)=[(.004,5) ... (.02,21)]
+dotsize(r) = r>0 ? 1 + 1000*r : 5

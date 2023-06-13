@@ -9,6 +9,7 @@ using GLMakie
 using StatsBase: Histogram, fit, normalize
 
 include("helpers.jl")
+maxboltz(v, T::Observable{Real}) = maxboltz(v; T=T.val)
 
 const vedges = range(0,3,31)
 const vbins = (vedges[1:end-1]+vedges[2:end])/2
@@ -69,6 +70,7 @@ end
     fig::Figure
     t::Observable{Real} = Observable(0.0)
     temp::Observable{Real} = Observable(0.5)
+    ms::Observable{Real} = Observable(5)
     x::Observable{Vector{Real}}  = Observable([])
     y::Observable{Vector{Real}}  = Observable([])
     vx::Observable{Vector{Real}} = Observable([])
@@ -80,13 +82,13 @@ end
 
 function Boxplot()
     bp = Boxplot(fig=newfig())
-    scatter!(bp.fig.content[1], bp.x,  bp.y)
-    scatter!(bp.fig.content[2], bp.vx, bp.vy)
+    scatter!(bp.fig.content[1], bp.x,  bp.y;  markersize=bp.ms)
+    scatter!(bp.fig.content[2], bp.vx, bp.vy; markersize=bp.ms)
     scatter!(bp.fig.content[3], vbins, bp.vhist,
         markersize = 10,
         color = :darkslategray3,
         )
-    lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth; T=bp.temp.val), -ones(length(vsmooth)),
+    lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth, bp.temp), -ones(length(vsmooth)),
         color = (:darkslategray3, 0.3),
         )
     text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
@@ -102,6 +104,7 @@ function update!(bp::Boxplot, dat)
     bp.v.val  = sqrt.(bp.vx.val.^2 + bp.vy.val.^2)
     bp.vhist[] = normalize(fit(Histogram, bp.v.val, vedges); mode=:pdf).weights
     bp.temp[] = round(temp(dat); digits=3)
+    bp.ms[] = ceil(Int, dotsize(dat.r0))
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
 
@@ -123,8 +126,8 @@ end
 
 function showinit!(bp::Boxplot, dat)
     col = "#dddddd"
-    scatter!(bp.fig.content[1],  dat.xy0[:,1],  dat.xy0[:,2], -ones(dat.N); color=col)
-    scatter!(bp.fig.content[2], dat.vxy0[:,1], dat.vxy0[:,2], -ones(dat.N); color=col)
+    scatter!(bp.fig.content[1],  dat.xy0[:,1],  dat.xy0[:,2], -ones(dat.N); color=col, markersize=bp.ms)
+    scatter!(bp.fig.content[2], dat.vxy0[:,1], dat.vxy0[:,2], -ones(dat.N); color=col, markersize=bp.ms)
     v0 = sqrt.(dat.vxy[:,1].^2 + dat.vxy[:,2].^2)
     vhist0 = normalize(fit(Histogram, v0, vedges); mode=:pdf).weights
     scatter!(bp.fig.content[3], vbins, vhist0, -ones(length(vbins)),

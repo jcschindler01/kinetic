@@ -8,10 +8,10 @@ using .KPlot
 
 
 ## params
-T = 2
-rate = 4
+T = 4
+rate = 1
 loops = 1
-dat0 = Datapoint(N=500, r0=.005, dt=.01, div=1, ic="corner", integrator="naive")
+dat0 = Datapoint(N=1, r0=.002, dt=.01, div=1, ic="random", integrator="free")
 
 ## go
 bp = Boxplot()
@@ -22,7 +22,7 @@ showinit!(bp, dat0)
 nsteps = floor(T/dat0.dt)
 
 ## go
-for loop=1:loops
+@time for loop=1:loops
 
 	dat = deepcopy(dat0)
 	update!(bp,dat)
