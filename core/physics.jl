@@ -71,42 +71,7 @@ function naivecol!(dat::Datapoint)
 	end
 end
 
-
 function symcol!(dat::Datapoint)
-	#= Time symmetric collision. =#
-	## faster arrays
-	x,  y, vx, vy, r0, N  =  dat.xy[:,1],  dat.xy[:,2], dat.vxy[:,1], dat.vxy[:,2], 1*dat.r0, 1*dat.N
-	## parity check
-	dat.parity==1 ? parflip = reverse : parflip = identity
-	## mulitiparticle collision events
-	hasinteracted = Set{Int}([])
-	## loop over particle pairs
-	for i=parflip(1:N)
-		## loop
-		for j=parflip(i+1:N)
-			## values
-			dx  =  x[j] -  x[i]
-			dy  =  y[j] -  y[i]
-			dvx = vx[j] - vx[i]
-			dvy = vy[j] - vy[i]
-			## conditions
-			isclose = sqrt(dx^2 + dy^2) < 2*r0
-			inbounds = 0<x[i]<1 && 0<y[i]<1 && 0<x[j]<1 && 0<y[j]<1
-			## pass if sufficiently close
-			if isclose && inbounds
-				collide!(dat, i, j)
-				i in hasinteracted || j in hasinteracted ? dat.mcc+=1 : nothing
-				push!(hasinteracted, i, j)
-			end
-		end
-	end
-	## change parity
-	dat.parity = (dat.parity + 1) % 2
-end
-
-
-
-function symcolmod!(dat::Datapoint)
 	#= Time symmetric collision. =#
 	## faster arrays
 	x,  y, vx, vy, r0, N  =  dat.xy[:,1],  dat.xy[:,2], dat.vxy[:,1], dat.vxy[:,2], 1*dat.r0, 1*dat.N

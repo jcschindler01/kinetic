@@ -55,8 +55,14 @@ function sym_step!(dat::Datapoint, dt)
 	#= Step dat from time [t] to time [t + dt]. =#
 	free!(dat, dt/2)
 	wallv!(dat)
-	#symcol!(dat)
-	symcolmod!(dat)
+	symcol!(dat)
 	free!(dat, dt/2)
 end
 
+function sym1_step!(dat::Datapoint, dt)
+	#= Step dat from time [t] to time [t + dt]. =#
+	free!(dat, dt/2)
+	wallv!(dat)
+	symcol1!(dat)
+	free!(dat, dt/2)
+end
