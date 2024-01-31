@@ -5,6 +5,7 @@
 logs/*/*.*
 !logs/*/data.txt
 !logs/*/out.gif
+core/data.txt
 
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
