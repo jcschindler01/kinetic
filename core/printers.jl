@@ -34,7 +34,7 @@ qp(x::Symbol) = qp(string(x))
 # datapoint quickprint labels
 function qpl(x::Datapoint)
 	s = ""
-	for i in 1:(fieldcount(Datapoint)-2)
+	for i in 1:(fieldcount(Datapoint)-5)
 		s *= qp(fieldnames(Datapoint)[i])
 	end
 	for k in 1:x.N
@@ -48,7 +48,7 @@ function qp(x::Datapoint)
 	## outstring
 	s = ""
 	## parameters and scalars
-	for i in 1:(fieldcount(Datapoint)-2)
+	for i in 1:(fieldcount(Datapoint)-5)
 		s *= qp(getfield(x,i))
 	end
 	## xy and vxy

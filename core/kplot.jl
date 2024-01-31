@@ -41,7 +41,7 @@ function newfig()
     ## theme
     set_theme!(boxtheme)
     ## fig
-    fig = Figure(resolution = (800,800))
+    fig = Figure(size = (800,800))
     ## axes
     Axis(fig[1,1], 
         xlabel=L"x", 
