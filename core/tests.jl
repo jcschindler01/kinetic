@@ -9,9 +9,6 @@ You should then be able to edit file and run functions to test.
 """
 
 
-
-using Revise
-
 include("kinetic.jl")
 include("kplot.jl")
 using .Kinetic, .KPlot
