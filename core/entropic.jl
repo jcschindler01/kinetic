@@ -2,14 +2,14 @@
 
 
 
-module KEntropic
 
-using DataStructures, Printf
+using DataStructures
 
 ## volume data type
 @kwdef mutable struct Volume
 	cg::String = "none"								## coarse graining info
 	tau::String = "none"							## reference state info
+	Stau::Float64 = 0.								## S(tau)
 	Nmc::Int = 0									## number of monte carlo trials
 	vdict::OrderedDict{String,Int}= OrderedDict()	## volume lookup dict
 end
@@ -25,11 +25,13 @@ function hist(x; nbins=10, xmin=0, xmax=1)
 end
 
 ## create 2d histogram
-function hist2d(x, y; nbins=3, xymin=0, xymax=1)
+function hist2d(x, y; nbins=3, xymin=0, xymax=1, eps=1e-12)
 	h = zeros(Int, (nbins,nbins))
 	dxy = (xymax-xymin)/nbins
 	for i=1:length(x)
-		h[1+floor(Int,x[i]/dxy), 1+floor(Int,y[i]/dxy)]+=1
+		xx = clamp(x[i], xymin+eps, xymax-eps)
+		yy = clamp(y[i], xymin+eps, xymax-eps)
+		h[1+floor(Int,xx/dxy), 1+floor(Int,yy/dxy)]+=1
 	end
 	return h
 end
@@ -37,9 +39,9 @@ end
 ## return qref
 function qref(v::Volume, macrostring::String)
 	if macrostring in keys(v.vdict)
-		return v.dict[macrostring]/v.Nmc
+		return v.vdict[macrostring]/v.Nmc
 	else
-		return 1/qdict["_N"]
+		return 1/v.Nmc
 	end
 end
 
@@ -81,11 +83,37 @@ function qref_spatial(;N=100, xybins=3, fbins=10, trials=1000)
 	return v
 end
 
-v = qref_spatial(N=1000, xybins=3, fbins=10, trials=10000)
-println(v.vdict)
-
+## quick print
+function qp(v::Volume)
+	println()
+	println(v.cg)
+	println(v.tau)
+	println(v.Nmc)
+	show = collect(keys(v.vdict))
+	stop = min(length(show), 10)
+	for x in show[1:stop]
+		println("$(x) q=$(qref(v,x))")
+	end
+	if stop!=length(show)
+		println("...")
+	end
+	println()
 end
 
+##
+function logfac2(n)
+	out = 0.0
+	for k=1:n
+		out += log2(k)
+	end
+	return 1.0*out
+end
 
+##
+function Stau(;d=2,N=1000,alpha=1111)
+	ee = MathConstants.e
+	S = N*d*log2(alpha*sqrt(ee)) - logfac2(N)
+	return 1.0*S
+end
 
 

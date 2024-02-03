@@ -8,10 +8,10 @@ using .KPlot
 
 
 ## params
-T = 4
-rate = 1
-loops = 2
-dat0 = Datapoint(N=500, r0=.005, dt=.01, div=10, ic="chain", integrator="naive")
+T = 2
+rate = 10
+loops = 1
+dat0 = Datapoint(N=200, r0=.005, dt=.01, div=10, ic="random", integrator="naive")
 
 ## go
 bp = Boxplot()
