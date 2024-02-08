@@ -4,51 +4,55 @@
 
 using .Kinetic
 
-dat = Datapoint(N=100, r0=.005, dt=.01, div=10, ic="corner", integrator="free")
+dat = Datapoint(N=1000, r0=.005, dt=.01, div=10, ic="corner", integrator="free")
 
-T = .05
+T = 1
 nsteps = floor(T/dat.dt)
 xybins = 3
-fbins = 50
+fbins = 12
 
 function logmult2(N, nvec)
 	return logfac2(N) - sum(logfac2.(nvec))
 end
 
-function log2_qf(f; N=1000, df=.01)
+function log2_qf(f; N=1000, df=.1)
+	"""Approximate method."""
 	##
+	S = NaN
 	b = length(f)
 	##
-	eps = 1e-15
-	nmin = ceil.(f .* N)					## minimum allowed particles per bin given f
-	nmax = floor.((f.+df.-eps) .* N)		## maximum allowed particles per bin given f
-	Nmin, Nmax = sum(nmin), sum(nmax)
+	Df = (1-sum(f))/b					## excess fraction per bin
+	dm = round(Int,min(Df,df-Df)*N)		## bin bounds for m value
+	nbar = round.((f.+Df)*N)
 	##
-	Smin, Smax = NaN, NaN
-	##
-	if (Nmin>N) | (Nmax<N)
-		Smin, Smax = -Inf, -Inf
-	elseif Nmin==N
-		Smax = - N * log2(b) + logmult2(N, nmin)
-		Smin = Smax
-	elseif Nmax==N
-		Smin = - N * log2(b) + logmult2(N, nmax)
-		Smax = Smin
-	else
-		##
-		nnmin = 1 * nmin
-		nnmax = 1 * nmax
-		excess_min = N .- (Nmax .- nmax)	## particles left when all other bins are full
-		excess_max = N .- (Nmin .- nmin)	## particles left when all other bins are empty
-		nnmin .= max.(nmin,excess_min)
-		nnmax .= max.(nmax,excess_max)
-		##
-		Smin = - N * log2(b) + logmult2(N, nnmax)
-		Smax = - N * log2(b) + logmult2(N, nnmin) #+ b * log2(MathConstants.e)
+	if dm<0
+		S = -Inf
+	elseif dm==0
+		println("dm = zero")
+		S = - N * log2(b) + logmult2(N, nbar)
+	elseif dm>0
+		println("dm = OK")
+		S = - N * log2(b) + logmult2(N, nbar) + b * log2(2*dm)
 	end
 	##
-	midpoint = (Smax + Smin)/2
-	bounds = (Smin, Smax)
-	##
-	return midpoint, bounds
+	return S
 end
+
+
+
+S0 = Stau(N=dat.N)
+
+println(S0)
+println()
+
+for k=1:nsteps
+	evolve!(dat)
+	ms = macrostate_spatial(dat.xy[:,1], dat.xy[:,2], xybins=xybins, fbins=fbins, mode="fxy")
+	f = vcat(ms...)
+	S = log2_qf(f; N=dat.N, df=1/fbins)
+	println(f)
+	println(S)
+	println()
+end
+
+
