@@ -30,6 +30,17 @@ parser(T::Type, s::String) = T==String ? s : parse(T,s)
 ## get initial conditions
 getic(ic::String,N::Int) = eval(:($(Symbol(ic))($(N))))
 
+## log2 factorial
+function logfac2(n)
+	out = 0.0
+	for k=1:n
+		out += log2(k)
+	end
+	return 1.0*out
+end
+
+## log2 multinomial coefficients
+logmult2(N, nvec) = logfac2(N) - sum(logfac2.(nvec))
 
 #=
 For 2d ideal gas of N particles.
