@@ -1,11 +1,4 @@
 
-"""
-Contains deprecated entropy calculator but leaving it here for posterity.
-"""
-
-
-
-# using Revise
 
 # include("../../core/kinetic.jl")
 
@@ -23,20 +16,6 @@ function logmult2(N, nvec)
 end
 
 function log2_qf(f; N=1000, df=.01)
-	r"""
-	Compute probability qf to be in macrostate described by coarse-fraction vector f.
-
-	f = 1d vector of fractional values
-	b = total number of (equally probable) spatial bins = length(f)
-	N = number of particles
-	df = coarse fraction increment
-
-	Returns a lower and upper approximation and their midpoint,
-	of output value S = log2(qf).
-
-	Theory:
-	$q_f = \sum_{\vec{n}} N_{\vec{n}} b^{-N}$.
-	"""
 	##
 	b = length(f)
 	##
@@ -73,33 +52,3 @@ function log2_qf(f; N=1000, df=.01)
 	##
 	return midpoint, bounds
 end
-
-N = 1000
-fbins = 50
-f = rand(9)
-f = round.(f./sum(f); digits=3)
-println(f)
-
-s = log2_qf(f; N=N, df=1/fbins)
-
-println(s)
-
-
-# vol = qref_spatial(N=dat.N, xybins=xybins, fbins=fbins, trials=1000)
-
-# println(qp(vol))
-# println()
-
-# # S0 = Stau(N=dat.N)
-
-# # println(S0)
-# # println()
-
-# for k=1:nsteps
-# 	evolve!(dat)
-# 	ms = macrostate_spatial(dat.xy[:,1], dat.xy[:,2], xybins=xybins, fbins=fbins)
-# 	S = S0 + 
-# 	println(ms)
-# 	println(S0-S)
-# end
-
