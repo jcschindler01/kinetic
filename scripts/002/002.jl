@@ -4,12 +4,12 @@
 
 using .Kinetic
 
-dat = Datapoint(N=1000, r0=.005, dt=.01, div=10, ic="corner", integrator="free")
+dat = Datapoint(N=500, r0=.005, dt=.01, div=10, ic="corner", integrator="free")
 
 T = 1
 nsteps = floor(T/dat.dt)
 xybins = 3
-fbins = 12
+fbins = 50
 
 function logmult2(N, nvec)
 	return logfac2(N) - sum(logfac2.(nvec))
@@ -28,10 +28,8 @@ function log2_qf(f; N=1000, df=.1)
 	if dm<0
 		S = -Inf
 	elseif dm==0
-		println("dm = zero")
 		S = - N * log2(b) + logmult2(N, nbar)
 	elseif dm>0
-		println("dm = OK")
 		S = - N * log2(b) + logmult2(N, nbar) + b * log2(2*dm)
 	end
 	##
@@ -47,10 +45,10 @@ println()
 
 for k=1:nsteps
 	evolve!(dat)
-	ms = macrostate_spatial(dat.xy[:,1], dat.xy[:,2], xybins=xybins, fbins=fbins, mode="fxy")
+	ms = macrostate_spatial(dat.xy[:,1], dat.xy[:,2], xybins=xybins, fbins=fbins, mode="fxy_coarse")
 	f = vcat(ms...)
 	S = log2_qf(f; N=dat.N, df=1/fbins)
-	println(f)
+	println(round.(f; digits=3))
 	println(S)
 	println()
 end
