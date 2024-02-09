@@ -64,8 +64,9 @@ function newfig()
     )
     Axis(fig[2,2],
         xlabel=L"t", 
-        ylabel=L"S/N",
-        limits=(0,100,0,20),
+        ylabel=L"S/N \;\; {\rm(bits)}",
+        limits=(0,1,0,20),
+        yticks=0:5:20,
     )
     return fig
 end
@@ -81,6 +82,7 @@ end
     vy::Observable{Vector{Real}} = Observable([])
     v::Observable{Vector{Real}}  = Observable([])
     vhist::Observable{Vector{Real}} = 0*vbins
+    S0::Observable{Real} = Observable(0.0)
     S_spatial::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
 end
@@ -94,8 +96,9 @@ function Boxplot()
         color = :darkslategray3,
         )
     lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth, bp.temp), -ones(length(vsmooth)),
-        color = (:darkslategray3, 0.3),
+        color = (:darkslategray3, 0.5),
         )
+    lines!(bp.fig.content[4], bp.S0)
     lines!(bp.fig.content[4], bp.S_spatial)
     #text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
     return bp
@@ -112,6 +115,7 @@ function update!(bp::Boxplot, dat)
     bp.temp[] = round(temp(dat); digits=3)
     bp.ms[] = ceil(Int, dotsize(dat.r0))
     ## entropy ##
+    bp.S0 = Stau(dat.N)
     append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
     bp.S_spatial[] = bp.S_spatial.val
     autolimits!(bp.fig.content[4])

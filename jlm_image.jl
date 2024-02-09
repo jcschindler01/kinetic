@@ -11,6 +11,11 @@ create_sysimage(
 	precompile_execution_file="jlm_image.jl",
 	)
 
+## Will use tons of RAM (~16+GB) and will crash if RAM runs out.
+## Add swap!!
+## Will also take lots of time (~1.5+hrs).
+## Set keep awake!!
+
 """
 
 using GLMakie

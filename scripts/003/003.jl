@@ -1,11 +1,9 @@
 
-# using Revise
+include("../../core/kinetic.jl")
+include("../../core/kplot.jl")
 
-# include("../../core/kinetic.jl")
-# include("../../core/kplot.jl")
-
-# using GLMakie
-# using .Kinetic
+using GLMakie
+using .Kinetic
 using .KPlot
 
 
