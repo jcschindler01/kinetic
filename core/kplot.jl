@@ -9,6 +9,7 @@ using GLMakie
 using StatsBase: Histogram, fit, normalize
 
 include("helpers.jl")
+include("entropic.jl")
 maxboltz(v, T::Observable{Real}) = maxboltz(v; T=T.val)
 
 const vedges = range(0,3,31)
@@ -62,6 +63,9 @@ function newfig()
         yticks=0:2,
     )
     Axis(fig[2,2],
+        xlabel=L"t", 
+        ylabel=L"S/N",
+        limits=(0,100,0,20),
     )
     return fig
 end
@@ -77,6 +81,7 @@ end
     vy::Observable{Vector{Real}} = Observable([])
     v::Observable{Vector{Real}}  = Observable([])
     vhist::Observable{Vector{Real}} = 0*vbins
+    S_spatial::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
 end
 
@@ -91,7 +96,8 @@ function Boxplot()
     lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth, bp.temp), -ones(length(vsmooth)),
         color = (:darkslategray3, 0.3),
         )
-    text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
+    lines!(bp.fig.content[4], bp.S_spatial)
+    #text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
     return bp
 end
 
@@ -105,6 +111,11 @@ function update!(bp::Boxplot, dat)
     bp.vhist[] = normalize(fit(Histogram, bp.v.val, vedges); mode=:pdf).weights
     bp.temp[] = round(temp(dat); digits=3)
     bp.ms[] = ceil(Int, dotsize(dat.r0))
+    ## entropy ##
+    append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
+    bp.S_spatial[] = bp.S_spatial.val
+    autolimits!(bp.fig.content[4])
+    #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
 

@@ -52,6 +52,9 @@ end
 
 ##
 function Stau(;d=2,N=1000,alpha=1111)
+	"""Entropy of energy-canonical spatially-microcanonical reference state tau.
+	The parameter alpha relates to the thermal de Broglie wavelength, derives
+	from scales chosen in manuscript."""
 	ee = MathConstants.e
 	S = N*d*log2(alpha*sqrt(ee)) - logfac2(N)
 	return 1.0*S
@@ -121,4 +124,12 @@ function spatial_log2_qf(f; N=1000, df=.1)
 	return S
 end
 
+##
+function S_spatial(dat; xybins=3, fbins=50)
+	ms = spatial_macrostate(dat.xy[:,1], dat.xy[:,2], xybins=xybins, fbins=fbins, mode="fxy_coarse")
+	f = vcat(ms...)
+	S0 = Stau(N=dat.N)
+	Sm = spatial_log2_qf(f; N=dat.N, df=1/fbins)
+	return S0 + Sm
+end
 
