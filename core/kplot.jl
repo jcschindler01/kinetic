@@ -15,6 +15,7 @@ maxboltz(v, T::Observable{Real}) = maxboltz(v; T=T.val)
 const vedges = range(0,3,31)
 const vbins = (vedges[1:end-1]+vedges[2:end])/2
 const vsmooth = range(0,3,1001)
+const tsmooth = range(0,100,2)
 
 const boxtheme = Theme(
     fontsize=14,
@@ -64,8 +65,9 @@ function newfig()
     )
     Axis(fig[2,2],
         xlabel=L"t", 
-        ylabel=L"S/N \;\; {\rm(bits)}",
+        ylabel=L"S/N (bits)",
         limits=(0,1,0,20),
+        xticks=0:40,
         yticks=0:5:20,
     )
     return fig
@@ -82,6 +84,7 @@ end
     vy::Observable{Vector{Real}} = Observable([])
     v::Observable{Vector{Real}}  = Observable([])
     vhist::Observable{Vector{Real}} = 0*vbins
+    tt::Observable{Vector{Real}} = Observable([])
     S0::Observable{Real} = Observable(0.0)
     S_spatial::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
@@ -98,8 +101,8 @@ function Boxplot()
     lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth, bp.temp), -ones(length(vsmooth)),
         color = (:darkslategray3, 0.5),
         )
-    lines!(bp.fig.content[4], bp.S0)
-    lines!(bp.fig.content[4], bp.S_spatial)
+    hlines!(bp.fig.content[4], bp.S0, color = (:gray, 0.3))
+    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, color=:darkgreen)
     #text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
     return bp
 end
@@ -115,10 +118,12 @@ function update!(bp::Boxplot, dat)
     bp.temp[] = round(temp(dat); digits=3)
     bp.ms[] = ceil(Int, dotsize(dat.r0))
     ## entropy ##
-    bp.S0 = Stau(dat.N)
+    bp.S0[] = Stau(N=dat.N)/dat.N
+    append!(bp.tt.val, dat.t)
     append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
+    bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
-    autolimits!(bp.fig.content[4])
+    limits!(bp.fig.content[4], (nothing, nothing), (0,20))
     #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
