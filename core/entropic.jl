@@ -15,11 +15,12 @@ using DataStructures
 end
 
 ## create histogram with even bin widths
-function hist(x; nbins=10, xmin=0, xmax=1)
+function hist(x; nbins=10, xmin=0, xmax=1, eps=1e-12)
 	h = zeros(Int, nbins)
 	dx = (xmax-xmin)/nbins
 	for i=1:length(x)
-		h[1+floor(Int,x[i]/dx)]+=1
+		xx = clamp(x[i], xmin+eps, xmax-eps)
+		h[1+floor(Int,xx/dx)]+=1
 	end
 	return h
 end
@@ -130,6 +131,116 @@ function S_spatial(dat; xybins=3, fbins=50)
 	f = vcat(ms...)
 	S0 = Stau(N=dat.N)
 	Sm = spatial_log2_qf(f; N=dat.N, df=1/fbins)
+	return S0 + Sm
+end
+
+
+## xy data to spatial density macrostate
+function spatial_macrostate(x, y; xybins=3, fbins=10, mode="fxy_coarse")
+	N = length(x)
+	df = 1/fbins
+	Nxy = hist2d(x, y, nbins=xybins)
+	fxy = Nxy/N
+	fxy_int = floor.(Int,fxy./df)
+	fxy_coarse = fxy_int.*df
+	fxy_string = string(fxy_int)
+	out = Dict([("Nxy",Nxy),("fxy",fxy),("fxy_int",fxy_int),("fxy_string", fxy_string),("fxy_coarse",fxy_coarse)])
+	out = (mode=="dict" ? out : out[mode])
+	return out
+end
+
+
+
+
+##
+function velocity_log2_qf(f; N=1000, df=.1, vedges=0:.1:3, sigma=1)
+	"""
+	Speed histogram macrostates.
+
+	From unitful params in manuscript:
+
+	beta p^2/2m = (beta m L^2/T^2) v^2/2 = (Nd/2E) v^2/2 (rhs unitless values).
+
+	Let sigma = sqrt(2E/Nd). Then
+
+	dp2/Z = dv2/sqrt(2 pi sigma^2) and beta p^2/2m = v^2/(2 sigma^2).
+
+	Thus
+
+	qf = q_f = tr(M_f tau)
+	   = prod_N int dp2/Z^2 exp(-beta p^2/2m) M_f
+	   = prod_N int dv2/sqrt(2pi sigma^2) exp(-v^2/2sigma^2) M_f
+	   = prod_N int sqrt(2pi) v dv/sigma exp(-v^2/2sigma^2) M_f.
+
+	Bin the velocities in phase space. Each point in phase space gives a 
+	string of velocity bins. Each string with same n has the same probability.
+	Phase space integral becomes sum over strings. M_f projects onto strings
+	with compatible n for f. Then
+
+	qf = sum_n N_n prod_N sqrt(2pi) v dv/sigma exp(-v^2/2sigma^2) M_f.
+
+	Again approximate sum_n N_n = (2dm)^b N_nbar. Then
+
+	qf = (2dm)^b N_nbar prod_vbar [sqrt(2pi) v dv/sigma exp(-v^2/2sigma^2)]^nbar
+
+	"""
+	##
+	S = NaN
+	b = length(f)
+	dv = vedges[2] - vedges[1]
+	vbar = (vedges[1:end-1]+vedges[2:end])/2
+	##
+	Df = (1-sum(f))/b					## excess fraction per bin
+	dm = round(Int,min(Df,df-Df)*N)		## bin bounds for m value
+	nbar = round.((f.+Df)*N)
+	##
+	S_sqbin = b*log2(2*dm)
+	S_Nnbar = logmult2(N, nbar)
+	S_dv = N*log2(sqrt(2*pi)*dv/sigma)
+	SS_prob = nbar .* log2.(vbar .* exp.(-vbar.^2 ./ (2 .* sigma)))
+	S_prob = sum(SS_prob)
+	total = S_sqbin + S_Nnbar + S_dv + S_prob
+	##
+	println(S_sqbin)
+	println(S_Nnbar)
+	println(S_dv)
+	println(S_prob)
+	println(total)
+	println(SS_prob)
+	if dm<0
+		S = -Inf
+	elseif dm==0
+		S = S_Nnbar
+	elseif dm>0
+		S = S_sqbin + S_Nnbar
+	end
+	##
+	return S
+end
+
+
+
+##
+function velocity_macrostate(v; vedges=0:.1:3, fbins=10)
+	##
+	N = length(v)
+	df = 1/fbins
+	dv = vedges[2] - vedges[1]
+	##
+	Nv = hist(v, nbins=length(vedges)-1, xmin=vedges[1], xmax=vedges[end])
+	fv = Nv/N
+	fv_int = floor.(Int,fv./df)
+	fv_coarse = fv_int.*df
+	return fv_coarse
+end
+
+
+
+##
+function S_velocity(dat; vedges=0:.1:3, fbins=50)
+	f = velocity_macrostate(speeds(dat); vedges=vedges, fbins=fbins)
+	S0 = Stau(N=dat.N)
+	Sm = velocity_log2_qf(f, N=dat.N, df=1/fbins, vedges=vedges, sigma=sigma(dat))
 	return S0 + Sm
 end
 

@@ -8,7 +8,7 @@ export evolve!, reversal!
 export qp, from_qp!, from_qp
 export from_file!, from_file, to_file, new_file
 export dist, phasedist, area
-export Stau, spatial_macrostate, spatial_log2_qf, S_spatial
+export Stau, spatial_macrostate, spatial_log2_qf, S_spatial, S_velocity
 
 ## include code
 include("datapoints.jl")

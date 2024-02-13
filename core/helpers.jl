@@ -58,7 +58,11 @@ speeds(dat) = sqrt.(dat.vxy[:,1].^2 + dat.vxy[:,2].^2)
 energy(dat) = sum(dat.vxy[:,1].^2 + dat.vxy[:,2].^2)/2
 temp(dat) = energy(dat)/dat.N
 maxboltz(v; T::Real=1) = (v./T).*exp.(-v.^2 ./ (2*T))
+beta(dat) = dat.N/energy(dat)
+sigma(dat) = sqrt(energy(dat)/dat.N)
 
+## info
+const l2e = log2(MathConstants.e)
 
 ## dotsize (r,rpx)=[(.004,5) ... (.02,21)]
 dotsize(r) = r>0 ? 1 + 1000*r : 5

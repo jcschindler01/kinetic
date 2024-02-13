@@ -87,6 +87,7 @@ end
     tt::Observable{Vector{Real}} = Observable([])
     S0::Observable{Real} = Observable(0.0)
     S_spatial::Observable{Vector{Real}} = Observable([])
+    S_velocity::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
 end
 
@@ -103,6 +104,7 @@ function Boxplot()
         )
     hlines!(bp.fig.content[4], bp.S0, color = (:gray, 0.3))
     lines!(bp.fig.content[4], bp.tt, bp.S_spatial, color=:darkgreen)
+    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, color=:darkblue)
     #text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
     return bp
 end
@@ -121,8 +123,10 @@ function update!(bp::Boxplot, dat)
     bp.S0[] = Stau(N=dat.N)/dat.N
     append!(bp.tt.val, dat.t)
     append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
+    append!(bp.S_velocity.val, S_velocity(dat)/dat.N)
     bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
+    bp.S_velocity[] = bp.S_velocity.val
     limits!(bp.fig.content[4], (nothing, nothing), (0,20))
     #####
     bp.ann[] =  """
