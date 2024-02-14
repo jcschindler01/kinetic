@@ -9,8 +9,8 @@ using .KPlot
 
 ## params
 T = 4
-rate = .2
-dat = Datapoint(N=200, r0=.01, dt=.01, div=10, ic="random", integrator="naive")
+rate = 1
+dat = Datapoint(N=200, r0=.01, dt=.01, div=10, ic="corner", integrator="naive")
 
 ## number steps
 nsteps = floor(T/dat.dt)

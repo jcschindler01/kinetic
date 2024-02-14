@@ -161,27 +161,10 @@ function velocity_log2_qf(f; N=1000, df=.1, vedges=0:.1:3, sigma=1)
 
 	beta p^2/2m = (beta m L^2/T^2) v^2/2 = (Nd/2E) v^2/2 (rhs unitless values).
 
-	Let sigma = sqrt(2E/Nd). Then
+	Let sigma = sqrt(2E/Nd).
 
-	dp2/Z = dv2/sqrt(2 pi sigma^2) and beta p^2/2m = v^2/(2 sigma^2).
-
-	Thus
-
-	qf = q_f = tr(M_f tau)
-	   = prod_N int dp2/Z^2 exp(-beta p^2/2m) M_f
-	   = prod_N int dv2/sqrt(2pi sigma^2) exp(-v^2/2sigma^2) M_f
-	   = prod_N int sqrt(2pi) v dv/sigma exp(-v^2/2sigma^2) M_f.
-
-	Bin the velocities in phase space. Each point in phase space gives a 
-	string of velocity bins. Each string with same n has the same probability.
-	Phase space integral becomes sum over strings. M_f projects onto strings
-	with compatible n for f. Then
-
-	qf = sum_n N_n prod_N sqrt(2pi) v dv/sigma exp(-v^2/2sigma^2) M_f.
-
-	Again approximate sum_n N_n = (2dm)^b N_nbar. Then
-
-	qf = (2dm)^b N_nbar prod_vbar [sqrt(2pi) v dv/sigma exp(-v^2/2sigma^2)]^nbar
+	Use fact that velocities drawn IID from
+	p(v) = sqrt(2pi) v dv sigma exp(-v^2/2sigma^2).
 
 	"""
 	##
@@ -189,31 +172,15 @@ function velocity_log2_qf(f; N=1000, df=.1, vedges=0:.1:3, sigma=1)
 	b = length(f)
 	dv = vedges[2] - vedges[1]
 	vbar = (vedges[1:end-1]+vedges[2:end])/2
+	## normed coarse prob
+	ff = f ./ sum(f)
+	## iid reference prob
+	qq = vbar .* exp.(-vbar.^2 ./ (2*sigma))
+	qq = qq ./ sum(qq)
 	##
-	Df = (1-sum(f))/b					## excess fraction per bin
-	dm = round(Int,min(Df,df-Df)*N)		## bin bounds for m value
-	nbar = round.((f.+Df)*N)
+	numterms = 0.5*(N*df)^b
 	##
-	S_sqbin = b*log2(2*dm)
-	S_Nnbar = logmult2(N, nbar)
-	S_dv = N*log2(sqrt(2*pi)*dv/sigma)
-	SS_prob = nbar .* log2.(vbar .* exp.(-vbar.^2 ./ (2 .* sigma)))
-	S_prob = sum(SS_prob)
-	total = S_sqbin + S_Nnbar + S_dv + S_prob
-	##
-	println(S_sqbin)
-	println(S_Nnbar)
-	println(S_dv)
-	println(S_prob)
-	println(total)
-	println(SS_prob)
-	if dm<0
-		S = -Inf
-	elseif dm==0
-		S = S_Nnbar
-	elseif dm>0
-		S = S_sqbin + S_Nnbar
-	end
+	S = - N * D(ff,qq) + log2(numterms)
 	##
 	return S
 end
@@ -237,7 +204,7 @@ end
 
 
 ##
-function S_velocity(dat; vedges=0:.1:3, fbins=50)
+function S_velocity(dat; vedges=0:.4:3, fbins=100)
 	f = velocity_macrostate(speeds(dat); vedges=vedges, fbins=fbins)
 	S0 = Stau(N=dat.N)
 	Sm = velocity_log2_qf(f, N=dat.N, df=1/fbins, vedges=vedges, sigma=sigma(dat))

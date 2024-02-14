@@ -53,3 +53,26 @@ function circle(N; v0=1, R=.25)
 	return xy, vrmsnorm(vxy)
 end
 
+
+
+##
+function gun(N; l=.4, r=.05, bullets=10)
+	## target
+	sq = ceil(Int, sqrt(N-bullets))
+	x0 = l*vcat([i/(sq+1) for i=1:sq, j=1:sq]...)
+	y0 = l*vcat([j/(sq+1) for i=1:sq, j=1:sq]...)
+	xy0  = hcat(x0,y0)[1:N-bullets,:]
+	vxy0 = 0 .*xy0[1:N-bullets,:]
+	## bullets
+	s = range(1,1.5,bullets)
+	x1 = (1-1.5*r) .+ r .* cos.(pi*s)
+	y1 = (1-1.5*r) .+ r .* sin.(pi*s)
+	xy1  = hcat(x1,y1)
+	vxy1 = -1 .+ 0 .* xy1
+	## 
+	xy  = vcat(xy0,xy1)
+	vxy = vcat(vxy0,vxy1)
+	##
+	return xy, vrmsnorm(vxy)
+end
+

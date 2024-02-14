@@ -69,7 +69,7 @@ function from_qp!(datapoint::Datapoint, s::String)
 	## instring
 	s = split(s,",")
 	## parameters and scalars
-	for i in 1:(fieldcount(Datapoint)-2)
+	for i in 1:(fieldcount(Datapoint)-5)
 		## type and val
 		valtype = typeof(getfield(datapoint, i))
 		valstring = String(strip(s[i]))
@@ -78,9 +78,13 @@ function from_qp!(datapoint::Datapoint, s::String)
 		setfield!(datapoint, i, val)
 	end
 	## xy and vxy
-	for k in 1:datapoint.N
-		nothing
-	end
+	ss = s[fieldcount(Datapoint)-4:end]
+	x  = [parser(Float64, String(strip(ss[5*i-3]))) for i in 1:datapoint.N]
+	y  = [parser(Float64, String(strip(ss[5*i-2]))) for i in 1:datapoint.N]
+	vx = [parser(Float64, String(strip(ss[5*i-1]))) for i in 1:datapoint.N]
+	vy = [parser(Float64, String(strip(ss[5*i-0]))) for i in 1:datapoint.N]
+	datapoint.xy  = hcat(x,y)
+	datapoint.vxy = hcat(vx,vy)
 	## return
 	return datapoint
 end

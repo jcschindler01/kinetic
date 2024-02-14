@@ -3,7 +3,10 @@
 
 module KPlot
 
-export Boxplot, update!, showinit!
+export Boxplot, update!, showinit!, animate
+
+include("kinetic.jl")
+using .Kinetic
 
 using GLMakie
 using StatsBase: Histogram, fit, normalize
@@ -128,6 +131,7 @@ function update!(bp::Boxplot, dat)
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
     limits!(bp.fig.content[4], (nothing, nothing), (0,20))
+    #autolimits!(bp.fig.content[4])
     #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
@@ -159,6 +163,46 @@ function showinit!(bp::Boxplot, dat)
         color = col,
         )
 end
+
+
+function animate(filename; tmin=-Inf, tmax=Inf, rate=.2, loops=1, delay=5)
+    for loop=1:loops
+        ## initialize
+        dat = Datapoint()
+        bp = Boxplot()
+        display(bp.fig)
+        ## go
+        open(filename, "r") do io
+            ## header
+            readline(io)
+            ## initial data
+            dat = Datapoint()
+            from_qp!(dat, readline(io))
+            dat.xy0  = 1 .* dat.xy
+            dat.vxy0 = 1 .* dat.vxy
+            update!(bp, dat)
+            if loop==1
+                dump(dat)
+                showinit!(bp, dat)
+            end
+            ## go
+            while !eof(io)
+                from_qp!(dat, readline(io))
+                if (tmin <= dat.t <= tmax)
+                    update!(bp,  dat)
+                    sleep(dat.dt/rate)
+                end
+            end
+        end
+    end
+    sleep(delay)
+end
+
+
+
+
+
+
 
 
 
