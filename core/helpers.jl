@@ -42,6 +42,12 @@ end
 ## log2 multinomial coefficients
 logmult2(N, nvec) = logfac2(N) - sum(logfac2.(nvec))
 
+## relative entropy
+function D(p,q)
+	mask = p .> 0
+	return sum(p[mask] .* log2.(p[mask] ./ q[mask]))
+end
+
 #=
 For 2d ideal gas of N particles.
 
