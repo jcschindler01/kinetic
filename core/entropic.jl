@@ -70,23 +70,12 @@ end
 
 using Optim
 
-function PSTAR_ENERGY(f, df, Q; e=0.5, dv=.1)
+function PSTAR_ENERGY(f, df, Q; vedges=nothing, dat=nothing)
 	P0 = f/sum(f)
 	m = length(f)
+	dv = vedges[2]-vedges[1]
 	en = [0.5 .*((n-1)*dv)^2 for n=1:m]
-	Df = 1 - sum(f)
-	De = e - sum(f.*en)
-	emid = De/Df
-	fillbins = Df/df
-	nlast = findfirst(en .>= 2*emid)
-	nfill = floor(Int, fillbins/2)
-	dF = zeros(m)
-	dF[1:nfill] .+= df
-	dF[nlast-nfill:nlast] .+= df
-	extra = Df - sum(dF)
-	dF[nfill+1] += extra
-	P = f .+ dF
-	clamp!(P, 0, 1)
+	P = f_velocity(dat; vedges=vedges, fbins=1/df, coarse=false)
 	return P0
 end
 
@@ -108,8 +97,9 @@ function log2pp_qf(f=ones(3)/4, df=.01, M=:spatial; Margs...)
 	elseif M==:velocity
 		e = Dict(Margs)[:sigma]^2
 		ve = Dict(Margs)[:vedges]
+		dat = Dict(Margs)[:dat]
 		dv = ve[2]-ve[1]
-		P = PSTAR_ENERGY(f, df, Q; e=e, dv=dv)
+		P = PSTAR_ENERGY(f, df, Q; vedges=ve, dat=dat)
 	end
 	## return relative entropy
 	return -D(P, Q)
@@ -172,14 +162,18 @@ function velocity(args)
 end
 
 ## coarse sample fraction for data
-function f_velocity(dat; vedges=0:.1:10, fbins=10)
+function f_velocity(dat; vedges=0:.1:10, fbins=10, coarse=true)
 	##
 	df = 1/fbins
 	v = speeds(dat)
 	nbins = length(vedges)-1
 	f = hist(v; nbins=nbins, xmin=0, xmax=vedges[end])/dat.N
 	fc = div.(f, df) .* df
-	return fc, df
+	if coarse==false
+		return f
+	else
+		return fc, df
+	end
  end
 
 ## entropy
@@ -189,7 +183,7 @@ function S_velocity(dat; dv=.1, min_vmax=5, fbins=100)
 	vedges = 0:dv:vmax
 	f, df = f_velocity(dat; vedges=vedges, fbins=fbins)
 	S0 = Stau(N=dat.N)
-	SM = dat.N * log2pp_qf(f, df, :velocity; vedges=vedges, sigma=sigma(dat))
+	SM = dat.N * log2pp_qf(f, df, :velocity; vedges=vedges, sigma=sigma(dat), dat=dat)
 	return S0 + SM
 end
 
