@@ -10,9 +10,9 @@ using .Kinetic
 using .KPlot
 
 ## params
-T = 1
+T = 20
 rate = 1
-dat = Datapoint(N=100, r0=.005, dt=.01, div=10, ic="chain", integrator="naive")
+dat = Datapoint(N=200, r0=.005, dt=.01, div=10, ic="corner", integrator="naive")
 
 ##
 save = false
@@ -47,8 +47,5 @@ if save==true
     cp(tempfile, outfile)
 end
 
-
-
-animate("temp.txt", rate=2)
 
 
