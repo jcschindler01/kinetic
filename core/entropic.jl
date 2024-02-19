@@ -70,14 +70,24 @@ end
 
 using Optim
 
-function PSTAR_ENERGY(f, df, Q; Epp=0.5, vedges=0:.1:3)
-	"""
-	Maximize D(P||Q) for P in range (f,f+df) with lagrange multipliers enforcing
-	sum(P)=1 and sum(P*v^2/2)=Epp.
-	"""
-	# m = length(f)
-	# L(x) = D(x,Q) + x[m+1]*(1-sum(x[1:m]))^2 + x[m+2]*(Epp-sum(x[1:m].*vedges[1:end-1]))^2
-	return f/sum(f)
+function PSTAR_ENERGY(f, df, Q; e=0.5, dv=.1)
+	P0 = f/sum(f)
+	m = length(f)
+	en = [0.5 .*((n-1)*dv)^2 for n=1:m]
+	Df = 1 - sum(f)
+	De = e - sum(f.*en)
+	emid = De/Df
+	fillbins = Df/df
+	nlast = findfirst(en .>= 2*emid)
+	nfill = floor(Int, fillbins/2)
+	dF = zeros(m)
+	dF[1:nfill] .+= df
+	dF[nlast-nfill:nlast] .+= df
+	extra = Df - sum(dF)
+	dF[nfill+1] += extra
+	P = f .+ dF
+	clamp!(P, 0, 1)
+	return P0
 end
 
 function log2pp_qf(f=ones(3)/4, df=.01, M=:spatial; Margs...)
@@ -96,7 +106,10 @@ function log2pp_qf(f=ones(3)/4, df=.01, M=:spatial; Margs...)
 	if M==:spatial
 		P = PSTAR(f, df, Q)
 	elseif M==:velocity
-		P = PSTAR_ENERGY(f, df, Q)
+		e = Dict(Margs)[:sigma]^2
+		ve = Dict(Margs)[:vedges]
+		dv = ve[2]-ve[1]
+		P = PSTAR_ENERGY(f, df, Q; e=e, dv=dv)
 	end
 	## return relative entropy
 	return -D(P, Q)
