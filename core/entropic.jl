@@ -45,41 +45,22 @@ function Stau(;N=1000, alpha=1111, d=2)
 end
 
 function PSTAR(f, df, Q)
+	"""
+	Start with actual distribution f, not coarse.
+	Both f and Q have correct norm and energy automatically.
+	Thus their difference is norm and energy preserving.
+	Simply apply the biggest multiple of their difference allowed by df/2 range.
+	"""
 	##
-	m = length(f)
-	delta = (1-sum(f))/m
-	mfill = floor(Int, delta)
-	extra = m*delta - mfill*df
-	P = f
-	##
-	if (delta<0).||(delta>df)
-		P = Inf*ones(m)
-	else
-		## sort most advantageous bins
-		dD = plog2q(f.+df, (f.+df)./Q) - plog2q(f, f./Q)
-		dD[Q.==0] .= -Inf
-		I = sortperm(dD, rev=true)
-		## fill most advantageous bins
-		P[I[1:mfill]] .+= df
-		P[I[mfill+1]] += extra
-	end
+	X = Q - f
+	Xscale = maximum(abs.(X))
+	dX = min(Xscale, df/2).* (X/Xscale)
+	P = f + dX
 	##
 	return P
 end
 
-
-using Optim
-
-function PSTAR_ENERGY(f, df, Q; vedges=nothing, dat=nothing)
-	P0 = f/sum(f)
-	m = length(f)
-	dv = vedges[2]-vedges[1]
-	en = [0.5 .*((n-1)*dv)^2 for n=1:m]
-	P = f_velocity(dat; vedges=vedges, fbins=1/df, coarse=false)
-	return P0
-end
-
-function log2pp_qf(f=ones(3)/4, df=.01, M=:spatial; Margs...)
+function log2pp_qf(f, df, M=:spatial; Margs...)
 	"""
 	Calculate log2(q_f) per particle.
 
@@ -91,16 +72,8 @@ function log2pp_qf(f=ones(3)/4, df=.01, M=:spatial; Margs...)
 	"""
 	# reference one-particle distribution
 	Q = eval(M)(Margs)
-	## actual one-particle distribution
-	if M==:spatial
-		P = PSTAR(f, df, Q)
-	elseif M==:velocity
-		e = Dict(Margs)[:sigma]^2
-		ve = Dict(Margs)[:vedges]
-		dat = Dict(Margs)[:dat]
-		dv = ve[2]-ve[1]
-		P = PSTAR_ENERGY(f, df, Q; vedges=ve, dat=dat)
-	end
+	## best actual one-particle distribution
+	P = PSTAR(f, df, Q)
 	## return relative entropy
 	return -D(P, Q)
 end
@@ -114,17 +87,15 @@ function spatial(args)
 	return ones(m)/m
 end
 
-function f_spatial(dat; xybins=3, fbins=10)
+function f_spatial(dat; xybins=3)
 	##
-	df = 1/fbins
 	f = hist2d(dat.xy[:,1], dat.xy[:,2], nbins=xybins)/dat.N
-	fc = div.(f, df) .* df
-	return fc[:], df
+	return f[:]
  end
 
-function S_spatial(dat; xybins=3, fbins=100)
-	f, df = f_spatial(dat; xybins=xybins, fbins=fbins)
+function S_spatial(dat; xybins=3, df=.05)
 	S0 = Stau(N=dat.N)
+	f = f_spatial(dat; xybins=xybins)
 	SM = dat.N * log2pp_qf(f, df, :spatial; xybins=xybins)
 	return S0 + SM
 end
@@ -134,7 +105,6 @@ end
 Speed distribution coarse-graining.
 """
 
-## reference distribution from tau
 function velocity(args)
 	"""
 	The single particle speed distribution is obtained from tau by
@@ -150,6 +120,7 @@ function velocity(args)
 		exp(-(1/2)(v/s)^2) - exp(-(1/2)(v'/s)^2),
 	giving the discrete distribution once normalized.		
 	"""
+	##
 	vedges = args[:vedges]
 	sigma = args[:sigma]
 	v1 = vedges[1:end-1]
@@ -158,32 +129,25 @@ function velocity(args)
 	s = sigma
 	Q = exp.(-0.5.*(v1./s).^2) - exp.(-0.5.*(v2./s).^2)
 	Q = Q./sum(Q)
+	##
 	return Q
 end
 
-## coarse sample fraction for data
-function f_velocity(dat; vedges=0:.1:10, fbins=10, coarse=true)
+function f_velocity(dat; vedges=0:.1:10)
 	##
-	df = 1/fbins
-	v = speeds(dat)
-	nbins = length(vedges)-1
-	f = hist(v; nbins=nbins, xmin=0, xmax=vedges[end])/dat.N
-	fc = div.(f, df) .* df
-	if coarse==false
-		return f
-	else
-		return fc, df
-	end
+	f = hist(speeds(dat); nbins=length(vedges)-1, xmin=0, xmax=vedges[end])/dat.N
+	return f
  end
 
 ## entropy
-function S_velocity(dat; dv=.1, min_vmax=5, fbins=100)
-	vmax = maximum(speeds(dat))+dv
-	vmax = max(vmax, min_vmax)
-	vedges = 0:dv:vmax
-	f, df = f_velocity(dat; vedges=vedges, fbins=fbins)
+function S_velocity(dat; dv=.1, min_vmax=5, df=.05)
+	##
 	S0 = Stau(N=dat.N)
-	SM = dat.N * log2pp_qf(f, df, :velocity; vedges=vedges, sigma=sigma(dat), dat=dat)
+	vmax = max(min_vmax, maximum(speeds(dat))+dv)
+	vedges = 0:dv:vmax
+	f = f_velocity(dat; vedges=vedges)
+	SM = dat.N * log2pp_qf(f, df, :velocity; vedges=vedges, sigma=sigma(dat))
+	##
 	return S0 + SM
 end
 
