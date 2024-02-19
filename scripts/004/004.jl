@@ -5,11 +5,9 @@ using .Kinetic
 
 
 ## params
-dat = Datapoint(N=10000, r0=.005, dt=.01, div=10, ic="random", integrator="free")
+dat = Datapoint(N=500, r0=.005, dt=.01, div=10, ic="gun", integrator="free")
 
 
-vedges = 0:.1:5
-fbins = 50
+S = S_velocity(dat)
 
-S = S_velocity(dat, vedges=vedges, fbins=fbins)
-
+println(S)

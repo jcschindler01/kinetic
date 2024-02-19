@@ -10,6 +10,6 @@ using .KPlot
 
 
 
-animate("gun_naive_N500_T4_1707926341.txt", tmax=3)
+animate("txt/chain_naive_N1000_T10_1707918727.txt", rate=1)
 
 

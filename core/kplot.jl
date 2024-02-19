@@ -105,10 +105,10 @@ function Boxplot()
     lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth, bp.temp), -ones(length(vsmooth)),
         color = (:darkslategray3, 0.5),
         )
-    hlines!(bp.fig.content[4], bp.S0, color = (:gray, 0.3))
+    hlines!(bp.fig.content[4], bp.S0, color = (:black, 0.5))
     lines!(bp.fig.content[4], bp.tt, bp.S_spatial, color=:darkgreen)
     lines!(bp.fig.content[4], bp.tt, bp.S_velocity, color=:darkblue)
-    #text!(bp.fig.content[4], .2,.6; text=bp.ann, align=(:left,:center), font="Courier", fontsize=16)
+    text!(bp.fig.content[3], 2.9, 1.95; text=bp.ann, align=(:right,:top), font="Courier", fontsize=16)
     return bp
 end
 
@@ -130,8 +130,8 @@ function update!(bp::Boxplot, dat)
     bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
-    limits!(bp.fig.content[4], (nothing, nothing), (0,20))
-    #autolimits!(bp.fig.content[4])
+    #limits!(bp.fig.content[4], (nothing, nothing), (0,20))
+    autolimits!(bp.fig.content[4])
     #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
@@ -142,7 +142,7 @@ function update!(bp::Boxplot, dat)
                 int=$(dat.integrator)
                  ic=$(dat.ic)
 
-                  T=$(round(temp(dat); digits=3))
+                  E/N=$(round(temp(dat); digits=3))
                  cc=$(dat.cc)
                 mcc=$(dat.mcc)
 
@@ -165,7 +165,7 @@ function showinit!(bp::Boxplot, dat)
 end
 
 
-function animate(filename; tmin=-Inf, tmax=Inf, rate=.2, loops=1, delay=5)
+function animate(filename; tmin=-Inf, tmax=Inf, rate=.2, loops=1, delay=1)
     for loop=1:loops
         ## initialize
         dat = Datapoint()

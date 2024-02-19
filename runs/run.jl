@@ -9,15 +9,17 @@ using GLMakie
 using .Kinetic
 using .KPlot
 
-
 ## params
-T = .03
+T = 1
 rate = 1
-dat = Datapoint(N=3, r0=.005, dt=.01, div=10, ic="random", integrator="free")
+dat = Datapoint(N=100, r0=.005, dt=.01, div=10, ic="chain", integrator="naive")
+
+##
+save = false
 
 ## 
-tempfile = "./_temp.txt"
-outfile = "$(dat.ic)_$(dat.integrator)_N$(dat.N)_T$(T)_$(round(Int,time())).txt"
+tempfile = "temp.txt"
+outfile = "txt/$(dat.ic)_$(dat.integrator)_N$(dat.N)_T$(T)_$(round(Int,time())).txt"
 
 ##
 new_file(dat, tempfile)
@@ -41,4 +43,12 @@ for k=1:nsteps
 end
 
 ## copy file
-cp(tempfile, outfile)
+if save==true
+    cp(tempfile, outfile)
+end
+
+
+
+animate("temp.txt", rate=2)
+
+

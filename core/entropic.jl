@@ -3,211 +3,183 @@
 
 
 
-using DataStructures
+include("helpers.jl")
 
-## volume data type
-@kwdef mutable struct Volume
-	cg::String = "none"								## coarse graining info
-	tau::String = "none"							## reference state info
-	Stau::Float64 = 0.								## S(tau)
-	Nmc::Int = 0									## number of monte carlo trials
-	vdict::OrderedDict{String,Int}= OrderedDict()	## volume lookup dict
+"""
+Sample frequency coarse-grainings
+
+An important class of coarse-grainings are those based on distributions of 
+single-particle properties. Suppose H = o H_k and let M be a local POVM in each
+subsystem. Then N = o M is a POVM whose outcomes are strings of M outcomes. 
+From this one forms the coarser NN = LN, which groups together strings based on
+the sample frequency of each outcome. The sample frequencies are taken coarsely
+with width df, so that NN_f is the sum over all M strings with sample frequency n/N
+in the range [f,f+df). Thus macrostate labels are in general subnormalized, in the 
+range 1 - m df <= sum f <= 1.
+
+We can say that tau is iid wrt to M if tr(oM tau) = prod_k tr(M tau_k) = prod_k Q_k
+with all tau_k identical. Let q = tr(NN_f tau). If tau is iid with respect to M, then
+by Sanov's theorem
+-(1/K) log q =~ D(P*||Q)
+where Q is the true iid distribution and P* is the worst [largest D(P*||Q)] 
+sample distribution among the set allowed by N_f.
+
+We can approximate P* by distributing the remaining probability optimally.
+Let delta = (1 - sum f)/df. Calculate dD = D(P+dP||Q)-D(P||Q). Sort and fill
+the first floor(delta) bins with extra df, and bin floor(delta)+1 with extra (delta-mdf)
+of probability. This gives an approximate P*. The approximation is that the
+df increment could possibly change the dD ordering, which in that case shouldn't
+matter too much.
+
+We therefore can evaluate macrostate volumes for coarse sample frequency
+whenever tau is iid wrt to M, obtaining the value
+- log q = K D(P*||Q).
+"""
+
+function Stau(;N=1000, alpha=1111, d=2)
+	"""
+	Entropy of energy-canonical spatial-microcanonical tau.
+	Alpha relates to thermal de Broglie wavelength cf manuscript.
+	"""
+	return N * d * log2(alpha*sqrt(ee)) - logfac2(N)
 end
 
-## create histogram with even bin widths
-function hist(x; nbins=10, xmin=0, xmax=1, eps=1e-12)
-	h = zeros(Int, nbins)
-	dx = (xmax-xmin)/nbins
-	for i=1:length(x)
-		xx = clamp(x[i], xmin+eps, xmax-eps)
-		h[1+floor(Int,xx/dx)]+=1
+function PSTAR(f, df, Q)
+	##
+	m = length(f)
+	delta = (1-sum(f))/m
+	mfill = floor(Int, delta)
+	extra = m*delta - mfill*df
+	P = f
+	##
+	if (delta<0).||(delta>df)
+		P = Inf*ones(m)
+	else
+		## sort most advantageous bins
+		dD = plog2q(f.+df, (f.+df)./Q) - plog2q(f, f./Q)
+		dD[Q.==0] .= -Inf
+		I = sortperm(dD, rev=true)
+		## fill most advantageous bins
+		P[I[1:mfill]] .+= df
+		P[I[mfill+1]] += extra
 	end
-	return h
+	##
+	return P
 end
 
-## create 2d histogram
-function hist2d(x, y; nbins=3, xymin=0, xymax=1, eps=1e-12)
-	h = zeros(Int, (nbins,nbins))
-	dxy = (xymax-xymin)/nbins
-	for i=1:length(x)
-		xx = clamp(x[i], xymin+eps, xymax-eps)
-		yy = clamp(y[i], xymin+eps, xymax-eps)
-		h[1+floor(Int,xx/dxy), 1+floor(Int,yy/dxy)]+=1
+
+using Optim
+
+function PSTAR_ENERGY(f, df, Q; Epp=0.5, vedges=0:.1:3)
+	"""
+	Maximize D(P||Q) for P in range (f,f+df) with lagrange multipliers enforcing
+	sum(P)=1 and sum(P*v^2/2)=Epp.
+	"""
+	# m = length(f)
+	# L(x) = D(x,Q) + x[m+1]*(1-sum(x[1:m]))^2 + x[m+2]*(Epp-sum(x[1:m].*vedges[1:end-1]))^2
+	return f/sum(f)
+end
+
+function log2pp_qf(f=ones(3)/4, df=.01, M=:spatial; Margs...)
+	"""
+	Calculate log2(q_f) per particle.
+
+	P is worst case distribution compatible with f,df.
+
+	Q is reference distribution computed from standard tau.
+	M is the function to compute Q distribution ie one-particle measurement on tau.
+	Margs are parameters of the one-particle measurement.
+	"""
+	# reference one-particle distribution
+	Q = eval(M)(Margs)
+	## actual one-particle distribution
+	if M==:spatial
+		P = PSTAR(f, df, Q)
+	elseif M==:velocity
+		P = PSTAR_ENERGY(f, df, Q)
 	end
-	return h
+	## return relative entropy
+	return -D(P, Q)
 end
 
-## xy data to spatial density macrostate
-function spatial_macrostate(x, y; xybins=3, fbins=10, mode="fxy_coarse")
-	N = length(x)
+"""
+Spatial distribution coarse-graining.
+"""
+
+function spatial(args)
+	m = args[:xybins]^2
+	return ones(m)/m
+end
+
+function f_spatial(dat; xybins=3, fbins=10)
+	##
 	df = 1/fbins
-	Nxy = hist2d(x, y, nbins=xybins)
-	fxy = Nxy/N
-	fxy_int = floor.(Int,fxy./df)
-	fxy_coarse = fxy_int.*df
-	fxy_string = string(fxy_int)
-	out = Dict([("Nxy",Nxy),("fxy",fxy),("fxy_int",fxy_int),("fxy_string", fxy_string),("fxy_coarse",fxy_coarse)])
-	out = (mode=="dict" ? out : out[mode])
-	return out
-end
+	f = hist2d(dat.xy[:,1], dat.xy[:,2], nbins=xybins)/dat.N
+	fc = div.(f, df) .* df
+	return fc[:], df
+ end
 
-##
-function Stau(;d=2,N=1000,alpha=1111)
-	"""Entropy of energy-canonical spatially-microcanonical reference state tau.
-	The parameter alpha relates to the thermal de Broglie wavelength, derives
-	from scales chosen in manuscript."""
-	ee = MathConstants.e
-	S = N*d*log2(alpha*sqrt(ee)) - logfac2(N)
-	return 1.0*S
-end
-
-##
-function spatial_log2_qf(f; N=1000, df=.1)
-	"""
-	Spatial density macrostates.
-
-	Approximately calculate log2(q_f) for the macrostate 
-	described by coarse fraction f with bin width df,
-	with N particles and b spatial bins.
-
-	The exact value is 
-	q_f = sum_n N_n b^{-N}
-
-	where the sum runs over all n = (n_1, n_2, ..., n_b) compatible 
-	with total particles sum(n)=N and coarse fraction n/N ~ f.
-	Here N_n = multinomial(N, n) = N! / prod(n!).
-
-	A coarse fraction f must sum between 1-b*dF and 1 in order to be valid.
-	Generally it sums to less than 1. In this case define
-	Df = (1 - sum(f))/b
-	as the extra fraction per bin.
-
-	So long as 0<=Df<=df, the coarse fraction f and width df are valid and compatible.
-	If this is false, no configuration works, so S=-Inf.
-
-	When 0<=Df<=df is true we can explicitly write a working configuration.
-	Take nbar = (f+Df)*N, which sums to N (mod rounding) and is in the correct bin.
-	We then write the exact value as
-	q_f = sum_m N! / prod((nbar+m)!) b^{-N}
-	where the sum is over all m = (m_1, ..., m_b) compatible
-	with total particles sum(m)=0 and coarse fraction (nbar+m)/N ~ f.
-
-	Now we start approximating in the case where multiple terms contribute.
-
-	Define dm = N*min(Df, df-Df), which in the valid case is between 0 and Df/2,
-	and which is the biggest symmetrical range of m values contained in each bin.
-	This gives an estimate of how many terms contribute to the sum, because
-	when nbar is close to bin edges, not many terms can contribute. But within this
-	range, for small numbers of bins, a good fraction of these terms contribute.
-
-	We approximate the sum as having (2*dm)^b equal terms, each evaluated at nbar.
-
-	I don't know exactly how bad the approximation is. 
-	It at least has some mutually cancelling factors, in that
-	we discount some terms from the full m sum, but count extra in the dm sum.
-	"""
-	##
-	S = NaN
-	b = length(f)
-	##
-	Df = (1-sum(f))/b					## excess fraction per bin
-	dm = round(Int,min(Df,df-Df)*N)		## bin bounds for m value
-	nbar = round.((f.+Df)*N)
-	##
-	if dm<0
-		S = -Inf
-	elseif dm==0
-		S = - N * log2(b) + logmult2(N, nbar)
-	elseif dm>0
-		S = - N * log2(b) + logmult2(N, nbar) + b * log2(2*dm)
-	end
-	##
-	return S
-end
-
-##
-function S_spatial(dat; xybins=3, fbins=50)
-	ms = spatial_macrostate(dat.xy[:,1], dat.xy[:,2], xybins=xybins, fbins=fbins, mode="fxy_coarse")
-	f = vcat(ms...)
+function S_spatial(dat; xybins=3, fbins=100)
+	f, df = f_spatial(dat; xybins=xybins, fbins=fbins)
 	S0 = Stau(N=dat.N)
-	Sm = spatial_log2_qf(f; N=dat.N, df=1/fbins)
-	return S0 + Sm
+	SM = dat.N * log2pp_qf(f, df, :spatial; xybins=xybins)
+	return S0 + SM
 end
 
 
-## xy data to spatial density macrostate
-function spatial_macrostate(x, y; xybins=3, fbins=10, mode="fxy_coarse")
-	N = length(x)
-	df = 1/fbins
-	Nxy = hist2d(x, y, nbins=xybins)
-	fxy = Nxy/N
-	fxy_int = floor.(Int,fxy./df)
-	fxy_coarse = fxy_int.*df
-	fxy_string = string(fxy_int)
-	out = Dict([("Nxy",Nxy),("fxy",fxy),("fxy_int",fxy_int),("fxy_string", fxy_string),("fxy_coarse",fxy_coarse)])
-	out = (mode=="dict" ? out : out[mode])
-	return out
-end
+"""
+Speed distribution coarse-graining.
+"""
 
-
-
-
-##
-function velocity_log2_qf(f; N=1000, df=.1, vedges=0:.1:3, sigma=1)
+## reference distribution from tau
+function velocity(args)
 	"""
-	Speed histogram macrostates.
-
-	From unitful params in manuscript:
-
-	beta p^2/2m = (beta m L^2/T^2) v^2/2 = (Nd/2E) v^2/2 (rhs unitless values).
-
-	Let sigma = sqrt(2E/Nd).
-
-	Use fact that velocities drawn IID from
-	p(v) = sqrt(2pi) v dv sigma exp(-v^2/2sigma^2).
-
+	The single particle speed distribution is obtained from tau by
+	changing to spherical velocity coords of each particle, and 
+	applying scale conversions from the manuscript. We only need the
+	unnormalized behavior (normalize after discretizing) which is
+		P(v) ~ v^{d-1} exp(-(1/2)(v/s)^2) dv
+	with
+		s = sqrt(2E/Nd).
+	The indefinite integral for d=2 is proportional to
+		-exp(-(1/2)(v/s)^2)
+	which means the definite integral from v to v' is
+		exp(-(1/2)(v/s)^2) - exp(-(1/2)(v'/s)^2),
+	giving the discrete distribution once normalized.		
 	"""
-	##
-	S = NaN
-	b = length(f)
-	dv = vedges[2] - vedges[1]
-	vbar = (vedges[1:end-1]+vedges[2:end])/2
-	## normed coarse prob
-	ff = f ./ sum(f)
-	## iid reference prob
-	qq = vbar .* exp.(-vbar.^2 ./ (2*sigma))
-	qq = qq ./ sum(qq)
-	##
-	numterms = 0.5*(N*df)^b
-	##
-	S = - N * D(ff,qq) + log2(numterms)
-	##
-	return S
+	vedges = args[:vedges]
+	sigma = args[:sigma]
+	v1 = vedges[1:end-1]
+	v2 = vedges[2:end]
+	vv = (v1+v2)/2
+	s = sigma
+	Q = exp.(-0.5.*(v1./s).^2) - exp.(-0.5.*(v2./s).^2)
+	Q = Q./sum(Q)
+	return Q
 end
 
-
-
-##
-function velocity_macrostate(v; vedges=0:.1:3, fbins=10)
+## coarse sample fraction for data
+function f_velocity(dat; vedges=0:.1:10, fbins=10)
 	##
-	N = length(v)
 	df = 1/fbins
-	dv = vedges[2] - vedges[1]
-	##
-	Nv = hist(v, nbins=length(vedges)-1, xmin=vedges[1], xmax=vedges[end])
-	fv = Nv/N
-	fv_int = floor.(Int,fv./df)
-	fv_coarse = fv_int.*df
-	return fv_coarse
-end
+	v = speeds(dat)
+	nbins = length(vedges)-1
+	f = hist(v; nbins=nbins, xmin=0, xmax=vedges[end])/dat.N
+	fc = div.(f, df) .* df
+	return fc, df
+ end
 
-
-
-##
-function S_velocity(dat; vedges=0:.4:3, fbins=100)
-	f = velocity_macrostate(speeds(dat); vedges=vedges, fbins=fbins)
+## entropy
+function S_velocity(dat; dv=.1, min_vmax=5, fbins=100)
+	vmax = maximum(speeds(dat))+dv
+	vmax = max(vmax, min_vmax)
+	vedges = 0:dv:vmax
+	f, df = f_velocity(dat; vedges=vedges, fbins=fbins)
 	S0 = Stau(N=dat.N)
-	Sm = velocity_log2_qf(f, N=dat.N, df=1/fbins, vedges=vedges, sigma=sigma(dat))
-	return S0 + Sm
+	SM = dat.N * log2pp_qf(f, df, :velocity; vedges=vedges, sigma=sigma(dat))
+	return S0 + SM
 end
+
+
+
 

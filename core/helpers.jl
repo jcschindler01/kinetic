@@ -44,9 +44,43 @@ logmult2(N, nvec) = logfac2(N) - sum(logfac2.(nvec))
 
 ## relative entropy
 function D(p,q)
-	mask = p .> 0
-	return sum(p[mask] .* log2.(p[mask] ./ q[mask]))
+	return sum(plog2q(p,p./q))
 end
+
+function plog2q(p,q)
+	s = NaN*p
+	mask = (p.>0).&&(q.>0)
+	s[mask] .= p[mask].*log2.(q[mask])
+	mask = (p.==0).&&(isfinite.(q))
+	s[mask] .= 0
+	return s
+end
+
+## using DataStructures
+
+## create histogram with even bin widths
+function hist(x; nbins=10, xmin=0, xmax=1, eps=1e-12)
+	h = zeros(Int, nbins)
+	dx = (xmax-xmin)/nbins
+	for i=1:length(x)
+		xx = clamp(x[i], xmin+eps, xmax-eps)
+		h[1+floor(Int,xx/dx)]+=1
+	end
+	return h
+end
+
+## create 2d histogram
+function hist2d(x, y; nbins=3, xymin=0, xymax=1, eps=1e-12)
+	h = zeros(Int, (nbins,nbins))
+	dxy = (xymax-xymin)/nbins
+	for i=1:length(x)
+		xx = clamp(x[i], xymin+eps, xymax-eps)
+		yy = clamp(y[i], xymin+eps, xymax-eps)
+		h[1+floor(Int,xx/dxy), 1+floor(Int,yy/dxy)]+=1
+	end
+	return h
+end
+
 
 #=
 For 2d ideal gas of N particles.
@@ -69,6 +103,7 @@ sigma(dat) = sqrt(energy(dat)/dat.N)
 
 ## info
 const l2e = log2(MathConstants.e)
+const ee = MathConstants.e
 
 ## dotsize (r,rpx)=[(.004,5) ... (.02,21)]
 dotsize(r) = r>0 ? 1 + 1000*r : 5
