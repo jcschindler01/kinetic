@@ -3,7 +3,7 @@
 
 module KPlot
 
-export Boxplot, update!, showinit!, animate
+export Boxplot, update!, showinit!, animate, record_animation
 
 include("kinetic.jl")
 using .Kinetic
@@ -198,7 +198,44 @@ function animate(filename; tmin=-Inf, tmax=Inf, rate=.2, loops=1, delay=1)
     sleep(delay)
 end
 
-
+function record_animation(filename; fmt="gif", save=false, fps=15, maxlines=300, delay=25)
+    ##
+    dat = Datapoint()
+    bp = Boxplot()
+    showinit!(bp, dat)
+    ##
+    linecount = countlines(filename)-2
+    println(linecount)
+    linecount = min(linecount, maxlines)
+    open(filename, "r") do io
+        #### PREP TO RECORD ####
+        ## lose header
+        readline(io)
+        ## initial data
+        dat = Datapoint()
+        from_qp!(dat, readline(io))
+        dat.xy0  = 1 .* dat.xy
+        dat.vxy0 = 1 .* dat.vxy
+        update!(bp, dat)
+        #### READY TO RECORD ###
+        ## 
+        global tempfile = "temp.$(fmt)"
+        global outfile = "$(fmt)/$(dat.ic)_$(dat.integrator)_N$(dat.N)_$(round(Int,time())).$(fmt)"
+        ##
+        lines = 1:(linecount+delay)
+        function step(line)
+            println(line)
+            if (line>delay) && (!eof(io))
+                from_qp!(dat, readline(io))
+                update!(bp,  dat)
+            end
+        end
+        record(step, bp.fig, tempfile, lines; framerate=fps)
+    end
+    if save==true
+        cp(tempfile, outfile)
+    end
+end
 
 
 
