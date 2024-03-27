@@ -24,13 +24,6 @@ by Sanov's theorem
 where Q is the true iid distribution and P* is the worst [largest D(P*||Q)] 
 sample distribution among the set allowed by N_f.
 
-We can approximate P* by distributing the remaining probability optimally.
-Let delta = (1 - sum f)/df. Calculate dD = D(P+dP||Q)-D(P||Q). Sort and fill
-the first floor(delta) bins with extra df, and bin floor(delta)+1 with extra (delta-mdf)
-of probability. This gives an approximate P*. The approximation is that the
-df increment could possibly change the dD ordering, which in that case shouldn't
-matter too much.
-
 We therefore can evaluate macrostate volumes for coarse sample frequency
 whenever tau is iid wrt to M, obtaining the value
 - log q = K D(P*||Q).

@@ -130,8 +130,8 @@ function update!(bp::Boxplot, dat)
     bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
-    #limits!(bp.fig.content[4], (nothing, nothing), (0,20))
-    autolimits!(bp.fig.content[4])
+    limits!(bp.fig.content[4], (nothing, nothing), (0,20))
+    #autolimits!(bp.fig.content[4])
     #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
