@@ -144,6 +144,27 @@ function S_velocity(dat; dv=.1, min_vmax=5, df=.01)
 	return S0 + SM
 end
 
+"""
+Local energy coarse-graining.
+"""
 
+## entropy
+function S_localE(dat; fA=.5, d=2)
+	##
+	S0 = Stau(N=dat.N)
+	N  = dat.N
+	NA = floor(Int, fA * N)
+	NB = N - NA
+	##
+	eAB = dat.vxy[:,1].^2 + dat.vxy[:,2].^2
+	eA = eAB[1:NA]
+	eB = eAB[NA+1:end]
+	##
+	E, EA, EB = sum(eAB), sum(eA), sum(eB)
+	##
+	log2_q = (NA*d/2 - 1)*log2(EA/NA) + (NB*d/2 - 1)*log2(EB/NB) - (N*d/2 - 1)*log2(E/N)
+	## return
+	return S0 + log2_q
+end
 
 

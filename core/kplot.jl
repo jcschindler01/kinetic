@@ -91,6 +91,7 @@ end
     S0::Observable{Real} = Observable(0.0)
     S_spatial::Observable{Vector{Real}} = Observable([])
     S_velocity::Observable{Vector{Real}} = Observable([])
+    S_localE::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
 end
 
@@ -108,6 +109,7 @@ function Boxplot()
     hlines!(bp.fig.content[4], bp.S0, color = (:black, 0.5))
     lines!(bp.fig.content[4], bp.tt, bp.S_spatial, color=:darkgreen)
     lines!(bp.fig.content[4], bp.tt, bp.S_velocity, color=:darkblue)
+    lines!(bp.fig.content[4], bp.tt, bp.S_localE, color=:cyan)
     text!(bp.fig.content[3], 2.9, 1.95; text=bp.ann, align=(:right,:top), font="Courier", fontsize=16)
     return bp
 end
@@ -127,11 +129,13 @@ function update!(bp::Boxplot, dat)
     append!(bp.tt.val, dat.t)
     append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
     append!(bp.S_velocity.val, S_velocity(dat)/dat.N)
+    append!(bp.S_localE.val, S_localE(dat)/dat.N)
     bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
-    limits!(bp.fig.content[4], (nothing, nothing), (0,20))
-    #autolimits!(bp.fig.content[4])
+    bp.S_localE[] = bp.S_localE.val
+    #limits!(bp.fig.content[4], (nothing, nothing), (0,20))
+    autolimits!(bp.fig.content[4])
     #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))

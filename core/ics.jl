@@ -76,3 +76,23 @@ function gun(N; l=.4, r=.05, bullets=10)
 	return xy, vrmsnorm(vxy)
 end
 
+
+## hot left cold right
+function hotcold(N; l=.5, TL=10, TR=1)
+	## number
+	NL = floor(Int, N/2)
+	NR = N - NL
+	## left
+	xyL  = zrand(NL)
+	xyL[:,1] .= l .* xyL[:,1]
+	vxyL = TL * randn((NL,2))
+	## left
+	xyR  = zrand(NR)
+	xyR[:,1] .= l .+ (1-l).*xyR[:,1]
+	vxyR = TR * randn((NR,2))
+	## 
+	xy  = vcat(xyL,xyR)
+	vxy = vcat(vxyL,vxyR)
+	##
+	return xy, vrmsnorm(vxy)
+end
