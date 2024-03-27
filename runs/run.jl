@@ -10,9 +10,9 @@ using .Kinetic
 using .KPlot
 
 ## params
-T = 4
-rate = 2
-dat = Datapoint(N=500, r0=.005, dt=.01, div=10, ic="corner", integrator="free")
+T = 1
+rate = 1
+dat = Datapoint(N=500, r0=.005, dt=.005, div=10, ic="hotcold", integrator="naive")
 
 ##
 save = true
