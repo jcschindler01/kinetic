@@ -68,10 +68,10 @@ function newfig()
     )
     Axis(fig[2,2],
         xlabel=L"t", 
-        ylabel=L"S/N (bits)",
+        ylabel=L"$S/N$ (bits)",
         limits=(0,1,0,20),
         xticks=0:40,
-        yticks=0:5:20,
+        yticks=0:1:20,
     )
     return fig
 end
@@ -106,10 +106,11 @@ function Boxplot()
     lines!(bp.fig.content[3], vsmooth, maxboltz(vsmooth, bp.temp), -ones(length(vsmooth)),
         color = (:darkslategray3, 0.5),
         )
-    hlines!(bp.fig.content[4], bp.S0, color = (:black, 0.5))
-    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, color=:darkgreen)
-    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, color=:darkblue)
-    lines!(bp.fig.content[4], bp.tt, bp.S_localE, color=:cyan)
+    hlines!(bp.fig.content[4], bp.S0, label=L"S(\tau)", color = (:black, 0.9), linestyle=:dash)
+    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, label=L"M_{\textrm{space}}", color=:darkgreen, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, label=L"M_{\textrm{speed}}", color=:darkblue, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_localE, label=L"M_{E_A} \otimes M_{E_B}", color=:cyan, alpha=.8)
+    axislegend(bp.fig.content[4], position=:rb, framevisible=false)
     text!(bp.fig.content[3], 2.9, 1.95; text=bp.ann, align=(:right,:top), font="Courier", fontsize=16)
     return bp
 end
@@ -134,8 +135,8 @@ function update!(bp::Boxplot, dat)
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
     bp.S_localE[] = bp.S_localE.val
-    #limits!(bp.fig.content[4], (nothing, nothing), (0,20))
-    autolimits!(bp.fig.content[4])
+    limits!(bp.fig.content[4], (nothing, nothing), (nothing, ceil(Int, bp.S0.val)+1/2))
+    #autolimits!(bp.fig.content[4])
     #####
     bp.ann[] =  """
                   t=$(round(dat.t; digits=3))
