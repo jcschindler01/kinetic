@@ -12,7 +12,7 @@ using .KPlot
 ## params
 T = 1
 rate = 1
-dat = Datapoint(N=500, r0=.005, dt=.005, div=10, ic="hotcold", integrator="naive")
+dat = Datapoint(N=50, r0=.005, dt=.005, div=10, ic="hotcold", integrator="naive")
 
 ##
 save = true
