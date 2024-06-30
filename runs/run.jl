@@ -15,7 +15,7 @@ rate = 1
 dat = Datapoint(N=50, r0=.005, dt=.005, div=10, ic="hotcold", integrator="naive")
 
 ##
-save = true
+save = false
 
 ## 
 tempfile = "temp.txt"
