@@ -10,12 +10,12 @@ using .Kinetic
 using .KPlot
 
 ## params
-T = 1
+T = 5
 rate = 1
-dat = Datapoint(N=50, r0=.005, dt=.005, div=10, ic="hotcold", integrator="naive")
+dat = Datapoint(N=500, r0=.005, dt=.005, div=10, ic="hotcold", integrator="naive")
 
 ##
-save = false
+save = true
 
 ## 
 tempfile = "temp.txt"
