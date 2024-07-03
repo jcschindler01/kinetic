@@ -32,7 +32,7 @@ whenever tau is iid wrt to M, obtaining the value
 function Stau(;N=1000, alpha=1111, d=2)
 	"""
 	Entropy of energy-canonical spatial-microcanonical tau.
-	Alpha relates to thermal de Broglie wavelength cf manuscript.
+	Alpha = L/lamtherm.
 	"""
 	return N * d * log2(alpha*sqrt(ee)) - logfac2(N)
 end
@@ -162,9 +162,45 @@ function S_localE(dat; fA=.5, d=2)
 	##
 	E, EA, EB = sum(eAB), sum(eA), sum(eB)
 	##
-	log2_q = (NA*d/2 - 1)*log2(EA/NA) + (NB*d/2 - 1)*log2(EB/NB) - (N*d/2 - 2)*log2(E/N)
+	eeA = NA * E / N
+	eeB = NB * E / N
+	##
+	aA = NA*d/2 - 1
+	aB = NB*d/2 - 1
+	##
+	negent = aA * log2(eeA/EA) + aB * log2(eeB/EB)
 	## return
-	return S0 + log2_q
+	return S0 - negent
+end
+
+function S_localEA(dat; fA=.5, d=2)
+	##
+	S0 = Stau(N=dat.N)
+	N  = dat.N
+	NA = floor(Int, fA * N)
+	NB = N - NA
+	##
+	eAB = dat.vxy[:,1].^2 + dat.vxy[:,2].^2
+	eA = eAB[1:NA]
+	eB = eAB[NA+1:end]
+	##
+	E, EA, EB = sum(eAB), sum(eA), sum(eB)
+	##
+	eeA = NA * E / N
+	eeB = NB * E / N
+	##
+	aA = NA*d/2 - 1
+	aB = NB*d/2 - 1
+	##
+	beta = N*d /(2*E)
+	##
+	negent = aA * log2(eeA/EA) + beta*(EA - eeA)*log2(exp(1))
+	##
+	## to make it the "conventional OE" version uncomment below
+	#### negent = aA * log2(eeA/EA)
+	##
+	## return
+	return S0 - negent
 end
 
 
