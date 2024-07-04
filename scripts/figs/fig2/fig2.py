@@ -43,7 +43,7 @@ plt.axes([.083,.09,.9,.88])
 
 ##
 fsize=16
-plt.xlabel(r"$t/t_0$", labelpad=-12, size=fsize)
+plt.xlabel(r"$t/T$", labelpad=-12, size=fsize)
 plt.ylabel(r"$S$" + " " r"$\rm (bits)$", labelpad=-18, size=fsize)
 plt.grid(zorder=0)
 

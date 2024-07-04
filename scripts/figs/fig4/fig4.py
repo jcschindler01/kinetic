@@ -5,7 +5,7 @@ from scipy.special import gammaln
 plt.style.use("classic")
 
 ## 
-datafile = "../../../runs/txt/hotcold_naive_N500_T1_1711556349.txt"
+datafile = "../../../runs/txt/hotcold_naive_N500_T5_1720045485.txt"
 
 ##
 l2e = np.log2(np.e)
@@ -102,14 +102,14 @@ plt.grid(zorder=0)
 
 
 ##
-xmin, xmax = (0,3.1)
-xticks = np.array([0,1,2,3])
+xmin, xmax = (0,5)
+xticks = np.array([0,1,2,3,4,5])
 plt.xticks(xticks, [r"$%s$"%s for s in xticks], size=fsize)
 plt.xlim(xmin, xmax)
 
 
 ##
-ymin, ymax = (11,15)
+ymin, ymax = (12,15)
 plt.ylim(ymin, ymax)
 plt.yticks([ymin,Stau/N,ymax],[r"$%s$"%ymin,r"$S(\tau)$",r"$%d$"%ymax], size=fsize)
 
@@ -146,10 +146,11 @@ leg = plt.legend(
 )
 
 
+
 ## ic plot
 faspect = 6./4
 width = .25
-plt.axes([.25,.2, width,faspect*width])
+plt.axes([.23,.2, width,faspect*width])
 plt.xticks([])
 plt.yticks([])
 plt.xlim(0,1)
@@ -159,11 +160,15 @@ plt.plot(x0[maskB], y0[maskB], 'b.', markersize=2)
 bbox = dict(ec='w', fc='w', pad=1, alpha=.9)
 plt.annotate(text=r"$A$", xy=(.25, -.03), xycoords="axes fraction", ha='center', va='top', size=fsize-1)
 plt.annotate(text=r"$B$", xy=(.75, -.03), xycoords="axes fraction", ha='center', va='top', size=fsize-1)
-plt.annotate(text=r"$\rm Initial$", xy=(.5, 1.03), xycoords="axes fraction", ha='center', va='bottom', size=fsize-2)
+plt.annotate(text=r"$\rm Initial$", xy=(.5, 1.03), xycoords="axes fraction", ha='center', va='bottom', bbox=bbox, size=fsize-2)
 plt.annotate(text=r"$\rm hot$", xy=(.25, .5), xycoords="axes fraction", ha='center', va='center', rotation=0, bbox=bbox, size=fsize-2)
 plt.annotate(text=r"$\rm cold$", xy=(.75, .5), xycoords="axes fraction", ha='center', va='center', rotation=-0, bbox=bbox, size=fsize-2)
 
 
 ##
 plt.savefig("fig4.pdf")
+
+##
+plt.show()
+
 
