@@ -26,13 +26,13 @@ def sysname(f):
 	return name
 
 f1 = "../../../runs/txt/hotcold_naive_N500_T5_1720045485.txt"
-f2 = "../../../runs/txt/corner_naive_N500_T4_1707916201.txt"
+f2 = "../../../runs/txt/corner_naive_N500_T5_1720110742.txt"
 f3 = "../../../runs/txt/gun_naive_N500_T4_1707926341.txt"
-f4 = "../../../runs/txt/chain_naive_N1000_T10_1707918727.txt"
+f4 = "../../../runs/txt/chain_naive_N500_T5_1720109181.txt"
 
 files = [f1,f2,f3,f4]
 
-t1 = .4
+t1 = .5
 
 x0  = []
 y0  = []

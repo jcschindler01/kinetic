@@ -7,8 +7,9 @@ function random(N)
 end
 
 ## random in corner
-function corner(N; l=.1)
+function corner(N; l=.22)
 	xy  = l .* zrand(N)
+	#vxy = randn((N,2))
 	vxy = vrand(N)
 	return xy, vrmsnorm(vxy)
 end
