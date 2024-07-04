@@ -167,8 +167,3 @@ plt.annotate(text=r"$\rm cold$", xy=(.75, .5), xycoords="axes fraction", ha='cen
 
 ##
 plt.savefig("fig4.pdf")
-
-##
-plt.show()
-
-

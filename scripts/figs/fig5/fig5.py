@@ -5,6 +5,26 @@ import matplotlib.pyplot as plt
 from scipy.special import gammaln
 plt.style.use("classic")
 
+
+def systemA(x,y,vx,vy,sys=""):
+	##
+	NN, kk = len(x), np.arange(len(x))
+	mask = kk < NN/2
+	##
+	if sys=="hotcold":
+		mask = x<0.5
+	if sys=="corner":
+		mask = kk <= NN/4
+	if sys=="gun":
+		mask = x>0.7
+	if sys=="chain":
+		mask = np.logical_and(kk<NN/4, kk%1 == 0)
+	return mask
+
+def sysname(f):
+	name = (f.split("/txt/")[-1]).split("_")[0]
+	return name
+
 f1 = "../../../runs/txt/hotcold_naive_N500_T5_1720045485.txt"
 f2 = "../../../runs/txt/corner_naive_N500_T4_1707916201.txt"
 f3 = "../../../runs/txt/gun_naive_N500_T4_1707926341.txt"
@@ -25,6 +45,7 @@ vx1 = []
 vy1 = []
 
 N = []
+maskA = []
 
 for F in files:
 	with open(F, 'r') as f:
@@ -44,6 +65,8 @@ for F in files:
 		vx0 += [vx,]
 		vy0 += [vy,]
 		N += [len(x),]
+		maskA += [systemA(x,y,vx,vy,sys=sysname(F))
+]
 		##
 		while t<t1:
 			##
@@ -93,12 +116,15 @@ for ax in axx+bxx:
 
 sty0 = dict(c='k', marker='.', markersize=2, ls='none',zorder=100)
 sty1 = dict(c='0.7', lw=.5, zorder=50)
+styA = dict(c='r', marker='.', alpha=.9, markersize=.2, ls='none',zorder=200)
 bbox = dict(fc='w', ec='0.9', pad=2, alpha=1)
 fsize = 14
 
 for i in range(4):
 	plt.sca(axx[i])
 	plt.plot(x0[i], y0[i], **sty0)
+	mask = maskA[i]
+	plt.plot(x0[i][mask], y0[i][mask], **styA)
 	s = .001
 	v = np.sqrt(np.sum(vx0[i]**2 + vy0[i]**2))/N[i]
 	dx, dy = s*vx0[i]/v, s*vy0[i]/v
@@ -109,16 +135,13 @@ for i in range(4):
 for i in range(4):
 	plt.sca(bxx[i])
 	plt.plot(x1[i], y1[i], **sty0)
+	mask = maskA[i]
+	plt.plot(x1[i][mask], y1[i][mask], **styA)	
 	s = .001
 	v = np.sqrt(np.sum(vx1[i]**2 + vy1[i]**2))/N[i]
 	dx, dy = s*vx1[i]/v, s*vy1[i]/v
 	for n in range(N[i]):
 		plt.plot([x1[i][n],x1[i][n]+dx[n]], [y1[i][n],y1[i][n]+dy[n]], **sty1)
-
-
-
-
-
 
 
 
