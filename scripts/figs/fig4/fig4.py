@@ -22,7 +22,7 @@ def STAU(N=500, alpha=1111, d=2):
 	return N*d*np.log2(alpha*np.sqrt(np.e)) - logfac2(N)
 
 ##
-def numlines(file):
+def numlines(datafile):
 	with open(datafile, "rb") as f:
 		num_lines = sum(1 for _ in f)
 	return num_lines
