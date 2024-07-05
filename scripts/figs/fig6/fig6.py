@@ -184,7 +184,7 @@ for ic in [0,1,2,3]:
 
 	##
 	plt.plot(t, S_spatial/N, 'c-', zorder=120, label=r"$M_{P(\vec{x})}$", **sty)
-	plt.plot(t, S_velocity/N, 'm-', zorder=121, label=r"$M_{P(\vec{x})}$", **sty)
+	plt.plot(t, S_velocity/N, 'm-', zorder=121, label=r"$M_{P(\vec{v})}$", **sty)
 	plt.plot(t, S_eAB/N, 'b-', zorder=119, label=r"$M_{E_A} \otimes M_{E_B}$", **sty)
 
 
