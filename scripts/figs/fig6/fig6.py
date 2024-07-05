@@ -1,7 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.special import gammaln
+from scipy.special import gammaln, erf
 plt.style.use("classic")
 
 
@@ -53,12 +53,25 @@ def P_spatial(x, y, b=6):
 def Q_spatial(b=6):
 	return np.ones((b,b))/b**2
 
-def P_velocity(vx, vy, vmax=5, dv=.5):
+vmax, dv = 3, .1
+vedges  = np.arange(-vmax, vmax+0.5*dv, dv)
+vvedges = np.arange(0    , vmax+0.5*dv, dv)
+
+def P_velocity(vx, vy, vedges=vedges, eps=1e-9):
 	N = len(vx)
-	edges = np.arange(-vmax, vmax+dv/2, dv)
-	P = np.histogram2d(vx, vy, bins=edges)[0]/N
+	vx, vy = np.clip(vx, -vmax-eps, vmax+eps), np.clip(vx, -vmax-eps, vmax+eps)
+	P = np.histogram2d(vx, vy, bins=vedges)[0]/N
 	return P
-	
+
+def Q_velocity(vedges=vedges, s=1):
+	## get prob in each bin for exp(-v^2/2s^2), s=sqrt(2E/Nd)
+	integral = erf(vedges/(np.sqrt(2)*s))
+	q = integral[1:]-integral[:-1]
+	qq = np.outer(q,q)
+	Q = qq/np.sum(qq)
+	return Q
+
+
 
 
 
@@ -72,7 +85,7 @@ labels = ['a','b','c','d']
 
 
 
-for ic in [0]:
+for ic in [0,1,2,3]:
 
 	datafile = files[ic]
 	npts = numlines(datafile)-1
@@ -123,12 +136,17 @@ for ic in [0]:
 			##
 			eA, eB = e[maskA], e[maskB]
 			EAA, EBB = np.sum(eA), np.sum(eB)
+			E = np.sum(e)
 			##
 			t[n] = tt
 			## spatial cg
 			P, Q = P_spatial(x,y), Q_spatial()
 			Pstar = PSTAR(P,Q)
 			S_spatial[n] = Stau - N * D(Pstar,Q)
+			## velocity cg
+			P, Q = P_velocity(x,y), Q_velocity(s=np.sqrt(2*E/(N*d)))
+			Pstar = PSTAR(P,Q)
+			S_velocity[n] = Stau - N * D(Pstar,Q)
 			## thermodynamic cg
 			S_eAB[n] = Stau-(NA*d/2-1)*np.log2(epsA/EAA)-(NB*d/2-1)*np.log2(epsB/(EBB+1e-12))
 			##
@@ -155,7 +173,7 @@ for ic in [0]:
 
 
 	##
-	ymin, ymax = (10,15)
+	ymin, ymax = (0,15)
 	plt.ylim(ymin, ymax)
 	plt.yticks([ymin,Stau/N,ymax],[r"$%s$"%ymin,r"$S(\tau)$",r"$%s$"%ymax], size=fsize)
 
@@ -167,8 +185,6 @@ for ic in [0]:
 	plt.plot(t, S_spatial/N, 'c-', zorder=120, label=r"$M_{P(\vec{x})}$", **sty)
 	plt.plot(t, S_velocity/N, 'm-', zorder=121, label=r"$M_{P(\vec{x})}$", **sty)
 	plt.plot(t, S_eAB/N, 'b-', zorder=119, label=r"$M_{E_A} \otimes M_{E_B}$", **sty)
-
-
 
 
 	##
