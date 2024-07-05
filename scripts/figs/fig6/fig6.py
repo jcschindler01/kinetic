@@ -39,7 +39,7 @@ def D(p,q):
 	return np.nansum(p*np.log2(p/q))
 
 
-def PSTAR(P, Q, dP=.01):
+def PSTAR(P, Q, dP=.02):
 	delta = np.max(np.abs(P-Q))
 	lam = np.min([1., 0.5*dP/delta])
 	PSTAR = (1-lam)*P + lam*Q
@@ -53,13 +53,14 @@ def P_spatial(x, y, b=6):
 def Q_spatial(b=6):
 	return np.ones((b,b))/b**2
 
-vmax, dv = 3, .1
-vedges  = np.arange(-vmax, vmax+0.5*dv, dv)
-vvedges = np.arange(0    , vmax+0.5*dv, dv)
+vmax,  dv  = 5, .3
+vvmax, dvv = 5, .3
+vedges  = np.arange(-vmax, vmax +0.5*dv,  dv)
+vvedges = np.arange(0    , vvmax+0.5*dvv, dvv)
 
 def P_velocity(vx, vy, vedges=vedges, eps=1e-9):
 	N = len(vx)
-	vx, vy = np.clip(vx, -vmax-eps, vmax+eps), np.clip(vx, -vmax-eps, vmax+eps)
+	vx, vy = np.clip(vx, -vmax+eps, vmax-eps), np.clip(vy, -vmax+eps, vmax-eps)
 	P = np.histogram2d(vx, vy, bins=vedges)[0]/N
 	return P
 
@@ -144,7 +145,7 @@ for ic in [0,1,2,3]:
 			Pstar = PSTAR(P,Q)
 			S_spatial[n] = Stau - N * D(Pstar,Q)
 			## velocity cg
-			P, Q = P_velocity(x,y), Q_velocity(s=np.sqrt(2*E/(N*d)))
+			P, Q = P_velocity(vx,vy), Q_velocity(s=np.sqrt(2*E/(N*d)))
 			Pstar = PSTAR(P,Q)
 			S_velocity[n] = Stau - N * D(Pstar,Q)
 			## thermodynamic cg
@@ -173,7 +174,7 @@ for ic in [0,1,2,3]:
 
 
 	##
-	ymin, ymax = (0,15)
+	ymin, ymax = (8,15)
 	plt.ylim(ymin, ymax)
 	plt.yticks([ymin,Stau/N,ymax],[r"$%s$"%ymin,r"$S(\tau)$",r"$%s$"%ymax], size=fsize)
 
