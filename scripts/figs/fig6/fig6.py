@@ -156,27 +156,30 @@ for ic in [0,1,2,3]:
 
 
 	##
-	plt.figure(figsize=(6,4))
-	plt.axes([.083,.09,.9,.88])
+	plt.figure(figsize=(4,3))
+	plt.axes([.12,.12,.85,.83])
 
 	##
 	fsize=16
 	plt.xlabel(r"$t/T$", labelpad=-12, size=fsize)
-	plt.ylabel(r"$S/N$" + " " r"$\rm (bits)$", labelpad=-18, size=fsize)
+	if ic==0:
+		plt.ylabel(r"$S/N$" + " " r"$\rm (bits)$", labelpad=-18, size=fsize)
 	plt.grid(zorder=0)
 
 
 	##
-	xmin, xmax = (0,5)
+	xmin, xmax = (0,3)
 	xticks = np.array([0,1,2,3,4,5])
 	plt.xticks(xticks, [r"$%s$"%s for s in xticks], size=fsize)
 	plt.xlim(xmin, xmax)
 
 
 	##
-	ymin, ymax = (8,15)
+	ymin, ymax = (10,15)
 	plt.ylim(ymin, ymax)
-	plt.yticks([ymin,Stau/N,ymax],[r"$%s$"%ymin,r"$S(\tau)$",r"$%s$"%ymax], size=fsize)
+	plt.yticks([ymin,ymax],[r"$%s$"%ymin,r"$%s$"%ymax], size=fsize)
+	if True:
+		plt.yticks([ymin,Stau/N,ymax],[r"$%s$"%ymin,r"$S(\tau)$",r"$%s$"%ymax], size=fsize)
 
 
 	##
