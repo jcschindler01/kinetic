@@ -129,7 +129,7 @@ for i in range(4):
 	v = np.sqrt(np.sum(vx0[i]**2 + vy0[i]**2))/N[i]
 	dx, dy = s*vx0[i]/v, s*vy0[i]/v
 	for n in range(N[i]):
-		plt.plot([x0[i][n],x0[i][n]+dx[n]], [y0[i][n],y0[i][n]+dy[n]], **sty1)
+		plt.plot([x0[i][n],x0[i][n]-dx[n]], [y0[i][n],y0[i][n]-dy[n]], **sty1)
 	plt.annotate(text=r"$\rm IC$ $%d$"%(i+1), xy=(.05,.95), ha="left", va="top", bbox=bbox, size=fsize, zorder=500)
 
 for i in range(4):
@@ -141,7 +141,7 @@ for i in range(4):
 	v = np.sqrt(np.sum(vx1[i]**2 + vy1[i]**2))/N[i]
 	dx, dy = s*vx1[i]/v, s*vy1[i]/v
 	for n in range(N[i]):
-		plt.plot([x1[i][n],x1[i][n]+dx[n]], [y1[i][n],y1[i][n]+dy[n]], **sty1)
+		plt.plot([x1[i][n],x1[i][n]-dx[n]], [y1[i][n],y1[i][n]-dy[n]], **sty1)
 
 
 

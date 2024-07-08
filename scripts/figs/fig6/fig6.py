@@ -54,7 +54,7 @@ def Q_spatial(b=6):
 	return np.ones((b,b))/b**2
 
 vmax,  dv  = 5, .3
-vvmax, dvv = 5, .3
+vvmax, dvv = 5, .1
 vedges  = np.arange(-vmax, vmax +0.5*dv,  dv)
 vvedges = np.arange(0    , vvmax+0.5*dvv, dvv)
 
@@ -72,14 +72,32 @@ def Q_velocity(vedges=vedges, s=1):
 	Q = qq/np.sum(qq)
 	return Q
 
+def P_speed(v, vedges=vvedges, eps=1e-9):
+	N = len(vx)
+	v = np.clip(v, 0, vvmax-eps)
+	P = np.histogram(v, bins=vedges)[0]/N
+	return P
 
-
-
+def Q_speed(vedges=vvedges, s=1):
+	## get prob in each bin
+	integral = np.exp(-(vedges**2/(2*s**2)))
+	q = integral[1:]-integral[:-1]
+	Q = q/np.sum(q)
+	return Q
 
 f1 = "../../../runs/txt/hotcold_naive_N500_T5_1720045485.txt"
 f2 = "../../../runs/txt/corner_naive_N500_T5_1720110742.txt"
 f3 = "../../../runs/txt/gun_naive_N500_T5_1720111984.txt"
 f4 = "../../../runs/txt/chain_naive_N500_T5_1720109181.txt"
+
+
+free1 = "../../../runs/txt/hotcold_naive_N500_T5_1720045485.txt"
+free2 = "../../../runs/txt/corner_naive_N500_T5_1720110742.txt"
+free3 = "../../../runs/txt/gun_naive_N500_T5_1720111984.txt"
+free4 = "../../../runs/txt/chain_naive_N500_T5_1720109181.txt"
+
+
+
 
 files = [f1,f2,f3,f4]
 labels = ['a','b','c','d']
@@ -148,6 +166,11 @@ for ic in [0,1,2,3]:
 			P, Q = P_velocity(vx,vy), Q_velocity(s=np.sqrt(2*E/(N*d)))
 			Pstar = PSTAR(P,Q)
 			S_velocity[n] = Stau - N * D(Pstar,Q)
+			## speed cg
+			v = np.sqrt(vx**2 + vy**2)
+			P, Q = P_speed(v), Q_speed(s=np.sqrt(2*E/(N*d)))
+			Pstar = PSTAR(P,Q)
+			S_speed[n] = Stau - N * D(Pstar,Q)
 			## thermodynamic cg
 			S_eAB[n] = Stau-(NA*d/2-1)*np.log2(epsA/EAA)-(NB*d/2-1)*np.log2(epsB/(EBB+1e-12))
 			##
@@ -174,7 +197,7 @@ for ic in [0,1,2,3]:
 	plt.xlim(xmin, xmax)
 
 
-	##
+	#
 	ymin, ymax = (10,15)
 	plt.ylim(ymin, ymax)
 	plt.yticks([ymin,ymax],[r"$%s$"%ymin,r"$%s$"%ymax], size=fsize)
@@ -186,15 +209,16 @@ for ic in [0,1,2,3]:
 	sty = dict(lw=1)
 
 	##
-	plt.plot(t, S_spatial/N, 'c-', zorder=120, label=r"$M_{P(\vec{x})}$", **sty)
-	plt.plot(t, S_velocity/N, 'm-', zorder=121, label=r"$M_{P(\vec{v})}$", **sty)
-	plt.plot(t, S_eAB/N, 'b-', zorder=119, label=r"$M_{E_A} \otimes M_{E_B}$", **sty)
+	plt.plot(t, S_spatial/N, 'c-', zorder=125, label=r"$M_{P(\vec{x})}$", **sty)
+	plt.plot(t, S_speed/N, 'g-', zorder=123, label=r"$M_{P(v)}$", **sty)
+	plt.plot(t, S_velocity/N, 'm-', zorder=124, label=r"$M_{P(\vec{v})}$", **sty)
+	plt.plot(t, S_eAB/N, 'b-', zorder=122, label=r"$M_{E_A} \otimes M_{E_B}$", **sty)
 
 
 	##
 	leg = plt.legend(
-		loc='lower right', fontsize=fsize+1, borderpad=.2, labelspacing=.2, 
-		borderaxespad=.25, handlelength=2.5, handletextpad=.5
+		loc='lower right', fontsize=fsize, borderpad=.1, labelspacing=.1, 
+		borderaxespad=.2, handlelength=2, handletextpad=.3
 	)
 
 
