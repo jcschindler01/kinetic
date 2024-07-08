@@ -12,10 +12,10 @@ using .KPlot
 ## params
 T = 5
 rate = 1
-dat = Datapoint(N=500, r0=.005, dt=.005, div=10, ic="gun", integrator="free")
+dat = Datapoint(N=500, r0=.005, dt=.005, div=10, ic="hotcold", integrator="free")
 
 ##
-save = false
+save = true
 
 ## 
 tempfile = "temp.txt"

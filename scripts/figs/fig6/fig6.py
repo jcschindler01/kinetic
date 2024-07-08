@@ -91,10 +91,10 @@ f3 = "../../../runs/txt/gun_naive_N500_T5_1720111984.txt"
 f4 = "../../../runs/txt/chain_naive_N500_T5_1720109181.txt"
 
 
-free1 = "../../../runs/txt/hotcold_naive_N500_T5_1720045485.txt"
-free2 = "../../../runs/txt/corner_naive_N500_T5_1720110742.txt"
-free3 = "../../../runs/txt/gun_naive_N500_T5_1720111984.txt"
-free4 = "../../../runs/txt/chain_naive_N500_T5_1720109181.txt"
+free1 = "../../../runs/txt/hotcold_free_N500_T5_1720426448.txt"
+free2 = "../../../runs/txt/corner_free_N500_T5_1720111905.txt"
+free3 = "../../../runs/txt/gun_free_N500_T5_1720112713.txt"
+free4 = "../../../runs/txt/chain_free_N500_T5_1720109831.txt"
 
 
 
