@@ -92,6 +92,7 @@ end
     S0::Observable{Real} = Observable(0.0)
     S_spatial::Observable{Vector{Real}} = Observable([])
     S_velocity::Observable{Vector{Real}} = Observable([])
+    S_vvector::Observable{Vector{Real}} = Observable([])
     S_localE::Observable{Vector{Real}} = Observable([])
     S_localEA::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
@@ -116,9 +117,10 @@ function Boxplot()
         color = (:darkslategray3, 0.5),
         )
     hlines!(bp.fig.content[4], bp.S0, label=L"S(\tau)", color = (:black, 0.9), linestyle=:dash)
-    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, zorder=125, label=L"M_{P(\vec{x})}", color=:cyan, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, zorder=124, label=L"M_{P(v)}", color=:green, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_localE, zorder=123, label=L"M_{E_A} \otimes M_{E_B}", color=:blue, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, label=L"M_{P(\vec{x})}", color=:cyan, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, label=L"M_{P(v)}", color=:green, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_vvector, label=L"M_{P(\vec{v})}", color=:magenta, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_localE, label=L"M_{E_A} \otimes M_{E_B}", color=:blue, alpha=.8)
     #lines!(bp.fig.content[4], bp.tt, bp.S_localEA, label=L"M_{E_A} \otimes \mathbb{1}_B", color=:magenta, alpha=.8)
     axislegend(bp.fig.content[4], position=:rb, framevisible=false)
     text!(bp.fig.content[3], 2.9, 1.95; text=bp.ann, align=(:right,:top), font="Courier", fontsize=16)
@@ -145,11 +147,13 @@ function update!(bp::Boxplot, dat)
     append!(bp.tt.val, dat.t)
     append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
     append!(bp.S_velocity.val, S_velocity(dat)/dat.N)
+    append!(bp.S_vvector.val, S_vvector(dat)/dat.N)
     append!(bp.S_localE.val, S_localE(dat)/dat.N)
     #append!(bp.S_localEA.val, S_localEA(dat)/dat.N)
     bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
+    bp.S_vvector[] = bp.S_vvector.val
     bp.S_localE[] = bp.S_localE.val
     #bp.S_localEA[] = bp.S_localEA.val
     limits!(bp.fig.content[4], (nothing, nothing), (nothing, ceil(Int, bp.S0.val)+1/2))

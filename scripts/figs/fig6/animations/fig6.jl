@@ -20,11 +20,12 @@ free2 = "runs/txt/corner_free_N500_T5_1720111905.txt"
 free3 = "runs/txt/gun_free_N500_T5_1720112713.txt"
 free4 = "runs/txt/chain_free_N500_T5_1720109831.txt"
 
-runs = [f1]
+runs = [f1,f2,f3,f4]
+free = [free1,free2,free3,free4]
 
 cd(@__DIR__)
 
-for data in [f1]
+for data in [f2]
 	record_animation(prefix * data, 
 		save=false, 
 		fps=20, maxlines=100, delay=25,
