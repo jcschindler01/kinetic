@@ -151,7 +151,7 @@ Velocity coarse-graining
 """
 
 ## entropy
-function S_vvector(dat; dv=.5, min_vmax=1, df=.02)
+function S_vvector(dat; dv=.3, min_vmax=5, df=.02)
 	##
 	S0 = Stau(N=dat.N)
 	nbins = ceil(Int,min_vmax/dv)
