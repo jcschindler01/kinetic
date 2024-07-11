@@ -116,9 +116,9 @@ function Boxplot()
         color = (:darkslategray3, 0.5),
         )
     hlines!(bp.fig.content[4], bp.S0, label=L"S(\tau)", color = (:black, 0.9), linestyle=:dash)
-    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, label=L"M_{P(\vec{x})}", color=:cyan, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, label=L"M_{P(v)}", color=:green, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_localE, label=L"M_{E_A} \otimes M_{E_B}", color=:magenta, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, zorder=125, label=L"M_{P(\vec{x})}", color=:cyan, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, zorder=124, label=L"M_{P(v)}", color=:green, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_localE, zorder=123, label=L"M_{E_A} \otimes M_{E_B}", color=:blue, alpha=.8)
     #lines!(bp.fig.content[4], bp.tt, bp.S_localEA, label=L"M_{E_A} \otimes \mathbb{1}_B", color=:magenta, alpha=.8)
     axislegend(bp.fig.content[4], position=:rb, framevisible=false)
     text!(bp.fig.content[3], 2.9, 1.95; text=bp.ann, align=(:right,:top), font="Courier", fontsize=16)
@@ -224,7 +224,6 @@ function record_animation(filename; fmt="gif", save=false, fps=15, maxlines=300,
     ##
     dat = Datapoint()
     bp = Boxplot()
-    showinit!(bp, dat)
     ##
     linecount = countlines(filename)-2
     println(linecount)
@@ -239,6 +238,7 @@ function record_animation(filename; fmt="gif", save=false, fps=15, maxlines=300,
         dat.xy0  = 1 .* dat.xy
         dat.vxy0 = 1 .* dat.vxy
         update!(bp, dat)
+        showinit!(bp, dat)
         #### READY TO RECORD ###
         ## 
         global tempfile = "temp.$(fmt)"

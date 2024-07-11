@@ -24,7 +24,7 @@ runs = [f1]
 
 cd(@__DIR__)
 
-for data in [f3]
+for data in [f1]
 	record_animation(prefix * data, 
 		save=false, 
 		fps=20, maxlines=100, delay=25,
