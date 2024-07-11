@@ -25,10 +25,10 @@ free = [free1,free2,free3,free4]
 
 cd(@__DIR__)
 
-for data in [f2]
+for data in [f1,f2,f3,f4,free1,free2,free3,free4]
 	record_animation(prefix * data, 
-		save=false, 
-		fps=20, maxlines=100, delay=25,
+		save=true, 
+		fps=25, maxlines=1200, delay=25,
 		fmt="gif"
 		)
 end
