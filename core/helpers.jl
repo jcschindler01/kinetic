@@ -81,6 +81,21 @@ function hist2d(x, y; nbins=3, xymin=0, xymax=1, eps=1e-12)
 	return h
 end
 
+## create 2d histogram
+function hist2dv(vx, vy; nbins=3, xymin=0, xymax=1, eps=1e-12)
+	h = zeros(Int, (nbins,nbins))
+	dxy = (xymax-xymin)/nbins
+	dd = (xymax-xymin)
+	x = vx .- xymin
+	y = vy .- xymin
+	for i=1:length(x)
+		xx = clamp(x[i], eps, dd-eps)
+		yy = clamp(y[i], eps, dd-eps)
+		h[1+floor(Int,xx/dxy), 1+floor(Int,yy/dxy)]+=1
+	end
+	return h
+end
+
 
 #=
 For 2d ideal gas of N particles.

@@ -4,6 +4,7 @@
 
 
 include("helpers.jl")
+using SpecialFunctions: erf
 
 """
 Sample frequency coarse-grainings
@@ -143,6 +144,36 @@ function S_velocity(dat; dv=.1, min_vmax=5, df=.02)
 	##
 	return S0 + SM
 end
+
+"""
+Velocity coarse-graining
+(vector)
+"""
+
+## entropy
+function S_vvector(dat; dv=.5, min_vmax=1, df=.02)
+	##
+	S0 = Stau(N=dat.N)
+	nbins = ceil(Int,min_vmax/dv)
+	vmax = nbins*dv
+	vedges = -vmax:dv:vmax
+	f = hist2dv(dat.vxy[:,1], dat.vxy[:,2], xymin=-vmax, xymax=vmax, nbins=2*nbins)/dat.N
+	Q = Q_vvector(vedges=vedges, s=sigma(dat))
+	Pstar = PSTAR(f, df, Q)
+	S = S0 - dat.N * D(Pstar,Q)
+	##
+	return 1*S
+end
+
+function Q_vvector(;vedges=[-3,3,.3], s=1)
+	## get prob in each bin for exp(-v^2/2s^2), s=sqrt(2E/Nd)
+	integral = erf.(vedges/(sqrt(2)*s))
+	q = integral[2:end]-integral[1:end-1]
+	qq = q .* q'
+	Q = qq/sum(qq)
+	return Q
+end
+
 
 """
 Local energy coarse-graining.
