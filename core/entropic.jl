@@ -182,10 +182,6 @@ function S_localE(dat; fA=.5, d=2)
 	eB = eAB[.!maskA]
 	NA = length(eA)
 	NB = length(eB)
-	println(NA)
-	println(NB)
-	println(NA+NB)
-	println(N)
 	##
 	E, EA, EB = sum(eAB), sum(eA), sum(eB)
 	##

@@ -95,12 +95,19 @@ end
     S_localE::Observable{Vector{Real}} = Observable([])
     S_localEA::Observable{Vector{Real}} = Observable([])
     ann::Observable{String} = "t="
+    maskA::Observable{BitVector}  = Observable([])
+    xA::Observable{Vector{Real}}  = Observable([])
+    yA::Observable{Vector{Real}}  = Observable([])
+    vxA::Observable{Vector{Real}} = Observable([])
+    vyA::Observable{Vector{Real}} = Observable([])
 end
 
 function Boxplot()
     bp = Boxplot(fig=newfig())
     scatter!(bp.fig.content[1], bp.x,  bp.y;  markersize=bp.ms)
+    scatter!(bp.fig.content[1], bp.xA,  bp.yA;  markersize=0.35*bp.ms.val, color=:red)
     scatter!(bp.fig.content[2], bp.vx, bp.vy; markersize=bp.ms)
+    scatter!(bp.fig.content[2], bp.vxA,  bp.vyA;  markersize=0.35*bp.ms.val, color=:red)
     scatter!(bp.fig.content[3], vbins, bp.vhist,
         markersize = 10,
         color = :darkslategray3,
@@ -128,6 +135,11 @@ function update!(bp::Boxplot, dat)
     bp.vhist[] = normalize(fit(Histogram, bp.v.val, vedges); mode=:pdf).weights
     bp.temp[] = round(temp(dat); digits=3)
     bp.ms[] = ceil(Int, dotsize(dat.r0))
+    bp.maskA[] = systemA(dat)
+    bp.xA.val   =   dat.xy[:,1][bp.maskA.val]
+    bp.yA[]     =   dat.xy[:,2][bp.maskA.val]
+    bp.vxA.val  =  dat.vxy[:,1][bp.maskA.val]
+    bp.vyA[]    =  dat.vxy[:,2][bp.maskA.val]
     ## entropy ##
     bp.S0[] = Stau(N=dat.N)/dat.N
     append!(bp.tt.val, dat.t)
