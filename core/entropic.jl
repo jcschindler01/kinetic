@@ -148,17 +148,44 @@ end
 Local energy coarse-graining.
 """
 
+function systemA(dat)
+	##
+	k = 1:dat.N
+	mask = k .< dat.N/2
+	##
+	if dat.ic=="hotcold"
+		mask = dat.xy0[:,1] .< 0.5
+	end
+	if dat.ic=="corner"
+		mask = k .<= dat.N/4
+	end
+	if dat.ic=="gun"
+		mask = dat.xy0[:,1] .> 0.7
+	end
+	if dat.ic=="chain"
+		mask = k .< dat.N/4
+	end
+	return mask
+end
+
+
 ## entropy
 function S_localE(dat; fA=.5, d=2)
 	##
 	S0 = Stau(N=dat.N)
 	N  = dat.N
-	NA = floor(Int, fA * N)
-	NB = N - NA
+	##
+	maskA = systemA(dat)
 	##
 	eAB = dat.vxy[:,1].^2 + dat.vxy[:,2].^2
-	eA = eAB[1:NA]
-	eB = eAB[NA+1:end]
+	eA = eAB[maskA]
+	eB = eAB[.!maskA]
+	NA = length(eA)
+	NB = length(eB)
+	println(NA)
+	println(NB)
+	println(NA+NB)
+	println(N)
 	##
 	E, EA, EB = sum(eAB), sum(eA), sum(eB)
 	##
