@@ -80,13 +80,13 @@ function spatial(args)
 	return ones(m)/m
 end
 
-function f_spatial(dat; xybins=5)
+function f_spatial(dat; xybins=6)
 	##
 	f = hist2d(dat.xy[:,1], dat.xy[:,2], nbins=xybins)/dat.N
 	return f[:]
  end
 
-function S_spatial(dat; xybins=6, df=.01)
+function S_spatial(dat; xybins=6, df=.02)
 	S0 = Stau(N=dat.N)
 	f = f_spatial(dat; xybins=xybins)
 	SM = dat.N * log2pp_qf(f, df, :spatial; xybins=xybins)
@@ -133,7 +133,7 @@ function f_velocity(dat; vedges=0:.1:10)
  end
 
 ## entropy
-function S_velocity(dat; dv=.1, min_vmax=5, df=.01)
+function S_velocity(dat; dv=.1, min_vmax=5, df=.02)
 	##
 	S0 = Stau(N=dat.N)
 	vmax = max(min_vmax, maximum(speeds(dat))+dv)

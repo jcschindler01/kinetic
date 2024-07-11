@@ -10,6 +10,7 @@ using .Kinetic
 
 using GLMakie
 using StatsBase: Histogram, fit, normalize
+using Printf
 
 include("helpers.jl")
 include("entropic.jl")
@@ -108,10 +109,10 @@ function Boxplot()
         color = (:darkslategray3, 0.5),
         )
     hlines!(bp.fig.content[4], bp.S0, label=L"S(\tau)", color = (:black, 0.9), linestyle=:dash)
-    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, label=L"M_{P(x)}", color=:darkgreen, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, label=L"M_{P(v)}", color=:darkblue, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_localE, label=L"M_{E_A} \otimes M_{E_B}", color=:cyan, alpha=.8)
-    lines!(bp.fig.content[4], bp.tt, bp.S_localEA, label=L"M_{E_A} \otimes \mathbb{1}_B", color=:magenta, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_spatial, label=L"M_{P(\vec{x})}", color=:cyan, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_velocity, label=L"M_{P(v)}", color=:green, alpha=.8)
+    lines!(bp.fig.content[4], bp.tt, bp.S_localE, label=L"M_{E_A} \otimes M_{E_B}", color=:magenta, alpha=.8)
+    #lines!(bp.fig.content[4], bp.tt, bp.S_localEA, label=L"M_{E_A} \otimes \mathbb{1}_B", color=:magenta, alpha=.8)
     axislegend(bp.fig.content[4], position=:rb, framevisible=false)
     text!(bp.fig.content[3], 2.9, 1.95; text=bp.ann, align=(:right,:top), font="Courier", fontsize=16)
     return bp
@@ -133,17 +134,17 @@ function update!(bp::Boxplot, dat)
     append!(bp.S_spatial.val, S_spatial(dat)/dat.N)
     append!(bp.S_velocity.val, S_velocity(dat)/dat.N)
     append!(bp.S_localE.val, S_localE(dat)/dat.N)
-    append!(bp.S_localEA.val, S_localEA(dat)/dat.N)
+    #append!(bp.S_localEA.val, S_localEA(dat)/dat.N)
     bp.tt[] = bp.tt.val
     bp.S_spatial[] = bp.S_spatial.val
     bp.S_velocity[] = bp.S_velocity.val
     bp.S_localE[] = bp.S_localE.val
-    bp.S_localEA[] = bp.S_localEA.val
+    #bp.S_localEA[] = bp.S_localEA.val
     limits!(bp.fig.content[4], (nothing, nothing), (nothing, ceil(Int, bp.S0.val)+1/2))
     #autolimits!(bp.fig.content[4])
     #####
     bp.ann[] =  """
-                  t=$(round(dat.t; digits=3))
+                  t=$(@sprintf("%.3f", dat.t))
 
                   N=$(dat.N)
                  r0=$(dat.r0)
@@ -155,7 +156,7 @@ function update!(bp::Boxplot, dat)
                  cc=$(dat.cc)
                 mcc=$(dat.mcc)
 
-                pdn=$(round(phasedist(dat)/dat.N; digits=5))
+                pdn=$(@sprintf("%.4f", phasedist(dat)/dat.N))
                 """
     return bp
 end
